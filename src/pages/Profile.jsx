@@ -11,6 +11,19 @@ export default function Profile() {
   const [profile, setProfile] = useState(null)
   const [vouches, setVouches] = useState([])
   const [loading, setLoading] = useState(true)
+  const [showReport, setShowReport] = useState(false)
+  const [reportForm, setReportForm] = useState({ reason: '', details: '' })
+  const [reporting, setReporting] = useState(false)
+  const [reportDone, setReportDone] = useState(false)
+
+  const REASONS = [
+    'Fake vouches / trust farming',
+    'Scammed me or someone I know',
+    'Fake profile / impersonation',
+    'Harassment or inappropriate messages',
+    'Spam or misleading information',
+    'Other'
+  ]
 
   useEffect(() => { load() }, [id])
 
@@ -21,6 +34,23 @@ export default function Profile() {
       supabase.from('vouches').select('*, voucher:profiles!vouches_voucher_id_fkey(id,full_name,skill,trust_score)').eq('vouchee_id', id).order('created_at', { ascending: false })
     ])
     setProfile(p); setVouches(v || []); setLoading(false)
+  }
+
+  async function submitReport(e) {
+    e.preventDefault()
+    if (!reportForm.reason) return
+    setReporting(true)
+    await supabase.from('reports').insert({
+      reporter_id: user.id,
+      reported_id: id,
+      reason: reportForm.reason,
+      details: reportForm.details.trim() || null,
+      status: 'pending'
+    })
+    setReporting(false)
+    setReportDone(true)
+    setShowReport(false)
+    setReportForm({ reason: '', details: '' })
   }
 
   if (loading) return <div className="loader"><div className="spin" style={{ width: 32, height: 32 }} /></div>
@@ -73,10 +103,8 @@ export default function Profile() {
         {!isOwnProfile && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {user ? (
-              <button
-                onClick={() => navigate(`/messages/${id}`)}
-                style={{ width: '100%', padding: '14px', fontSize: 15, borderRadius: 12, background: 'var(--green)', color: 'white', border: 'none', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
-              >
+              <button onClick={() => navigate(`/messages/${id}`)}
+                style={{ width: '100%', padding: '14px', fontSize: 15, borderRadius: 12, background: 'var(--green)', color: 'white', border: 'none', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                 </svg>
@@ -90,10 +118,14 @@ export default function Profile() {
               </Link>
             )}
             <Link to={user ? `/vouch?to=${id}` : '/login'}>
-              <button className="btn btn-outline btn-full">
-                Vouch for {profile.full_name?.split(' ')[0]}
-              </button>
+              <button className="btn btn-outline btn-full">Vouch for {profile.full_name?.split(' ')[0]}</button>
             </Link>
+            {user && (
+              <button onClick={() => setShowReport(!showReport)}
+                style={{ width: '100%', padding: '10px', fontSize: 13, borderRadius: 10, background: 'transparent', color: 'var(--muted)', border: '1px solid var(--border)', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
+                Report this profile
+              </button>
+            )}
           </div>
         )}
 
@@ -104,11 +136,42 @@ export default function Profile() {
         )}
       </div>
 
-      {/* Vouches */}
-      <h2 style={{ fontSize: 18, color: 'var(--green)', marginBottom: '1rem' }}>
-        What people say ({vouches.length})
-      </h2>
+      {/* Report done message */}
+      {reportDone && (
+        <div style={{ background: 'var(--green-pale)', border: '1px solid #B8E8D4', borderRadius: 12, padding: '1rem', marginBottom: '1.5rem' }}>
+          <p style={{ fontSize: 14, color: 'var(--green-mid)', fontWeight: 500 }}>Report submitted. Our admin team will review it shortly. Thank you for helping keep TrustCircle safe.</p>
+        </div>
+      )}
 
+      {/* Report form */}
+      {showReport && user && (
+        <div className="card" style={{ borderLeft: '4px solid #F5A623', marginBottom: '1.5rem', padding: '1.25rem' }}>
+          <h3 style={{ fontSize: 16, color: 'var(--dark)', marginBottom: '0.25rem' }}>Report {profile.full_name?.split(' ')[0]}</h3>
+          <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: '1rem' }}>This will be reviewed by our admin team privately.</p>
+          <form onSubmit={submitReport} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div>
+              <label style={{ fontSize: 13, fontWeight: 500, display: 'block', marginBottom: 6 }}>Reason *</label>
+              <select value={reportForm.reason} onChange={e => setReportForm(f => ({ ...f, reason: e.target.value }))} required>
+                <option value="">Select a reason</option>
+                {REASONS.map(r => <option key={r} value={r}>{r}</option>)}
+              </select>
+            </div>
+            <div>
+              <label style={{ fontSize: 13, fontWeight: 500, display: 'block', marginBottom: 6 }}>Details <span style={{ color: 'var(--muted)', fontWeight: 400 }}>(optional)</span></label>
+              <textarea placeholder="Tell us more about what happened..." value={reportForm.details} onChange={e => setReportForm(f => ({ ...f, details: e.target.value }))} rows={3} style={{ resize: 'vertical' }} />
+            </div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button type="submit" className="btn btn-amber" style={{ flex: 1 }} disabled={reporting || !reportForm.reason}>
+                {reporting ? 'Submitting...' : 'Submit report'}
+              </button>
+              <button type="button" className="btn btn-outline" onClick={() => setShowReport(false)} style={{ padding: '13px 18px' }}>Cancel</button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Vouches */}
+      <h2 style={{ fontSize: 18, color: 'var(--green)', marginBottom: '1rem' }}>What people say ({vouches.length})</h2>
       {vouches.length === 0 ? (
         <div className="card" style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)' }}>
           <p style={{ fontSize: 14 }}>No vouches yet — be the first to vouch for this person.</p>
@@ -127,9 +190,7 @@ export default function Profile() {
               <span style={{ fontSize: 11, color: 'var(--muted)' }}>Score: {v.voucher?.trust_score}</span>
             </div>
             {v.message ? (
-              <p style={{ fontSize: 14, fontStyle: 'italic', color: 'var(--dark)', borderLeft: '3px solid var(--green-light)', paddingLeft: 10, lineHeight: 1.65 }}>
-                "{v.message}"
-              </p>
+              <p style={{ fontSize: 14, fontStyle: 'italic', color: 'var(--dark)', borderLeft: '3px solid var(--green-light)', paddingLeft: 10, lineHeight: 1.65 }}>"{v.message}"</p>
             ) : (
               <p style={{ fontSize: 13, color: 'var(--muted)' }}>Vouched without a message</p>
             )}

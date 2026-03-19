@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import Icon, { SKILL_ICONS } from '../components/Icon'
 
 export default function HowItWorks() {
   return (
@@ -9,16 +10,16 @@ export default function HowItWorks() {
       </div>
 
       {[
-        { n: '01', e: '👤', t: 'Create your profile', d: 'Sign up free in 2 minutes. Tell us your name, email and what service you offer. Your trust score starts at zero — it only grows through real vouches.' },
-        { n: '02', e: '🤝', t: 'Vouch for people you know', d: 'Know a great electrician or lawyer? Vouch for them. Your reputation is tied to every vouch you give — so only vouch for people you truly trust.' },
-        { n: '03', e: '🔍', t: 'Search trusted services', d: 'Need help? Search by skill. We show the most trusted people ranked by real vouches from real people in your network.' },
-        { n: '04', e: '🤖', t: 'AI calculates trust chains', d: 'Our algorithm weighs each vouch by the voucher\'s own trust score. A vouch from a highly trusted person carries more weight — just like in real life.' },
-        { n: '05', e: '⭐', t: 'Build your reputation', d: 'The more vouches you receive, the higher your score. A high score attracts more clients and more opportunities across Nigeria.' },
+        { n: '01', icon: 'user', t: 'Create your profile', d: 'Sign up free in 2 minutes. Tell us your name, email and what service you offer. Your trust score starts at zero — it only grows through real vouches.' },
+        { n: '02', icon: 'vouch', t: 'Vouch for people you know', d: 'Know a great electrician or lawyer? Vouch for them. Your reputation is tied to every vouch you give — so only vouch for people you truly trust.' },
+        { n: '03', icon: 'search', t: 'Search trusted services', d: 'Need help? Search by skill. We show the most trusted people ranked by real vouches from real people in your network.' },
+        { n: '04', icon: 'trending', t: 'AI calculates trust chains', d: 'Our algorithm weighs each vouch by the voucher\'s own trust score. A vouch from a highly trusted person carries more weight — just like in real life.' },
+        { n: '05', icon: 'award', t: 'Build your reputation', d: 'The more vouches you receive, the higher your score. A high score attracts more clients and more opportunities across Nigeria.' },
       ].map(({ n, e, t, d }, i, arr) => (
         <div key={n} style={{ display: 'flex', gap: '1.25rem', paddingBottom: '1.5rem', marginBottom: '1.5rem', borderBottom: i < arr.length - 1 ? '1px solid var(--border)' : 'none' }}>
           <div style={{ flexShrink: 0, width: 48, height: 48, borderRadius: '50%', background: 'var(--green-pale)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Fraunces, serif', fontWeight: 700, color: 'var(--green)', fontSize: 14 }}>{n}</div>
           <div>
-            <p style={{ fontSize: 24, marginBottom: 6 }}>{e}</p>
+            <div style={{ width:46,height:46,borderRadius:12,background:"var(--green-pale)",display:"flex",alignItems:"center",justifyContent:"center",marginBottom:12 }}><Icon name={icon} size={22} color="var(--green)" /></div>
             <h3 style={{ fontSize: 17, color: 'var(--green)', marginBottom: 8 }}>{t}</h3>
             <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.75 }}>{d}</p>
           </div>
@@ -33,7 +34,7 @@ export default function HowItWorks() {
             { r: '0–20', l: 'New member', c: 'var(--muted)' },
             { r: '20–40', l: 'Building trust', c: '#9A6700' },
             { r: '40–70', l: 'Growing', c: 'var(--amber)' },
-            { r: '70–100', l: 'Highly trusted ⭐', c: 'var(--green-mid)' },
+            { r: '70–100', l: 'Highly trusted', c: 'var(--green-mid)' },
           ].map(({ r, l, c }) => (
             <div key={r} style={{ background: 'white', borderRadius: 10, padding: '0.875rem' }}>
               <p style={{ fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: 18, color: c, marginBottom: 4 }}>{r}</p>

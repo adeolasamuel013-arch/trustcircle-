@@ -15,12 +15,12 @@ export default function Dashboard() {
 
   async function load() {
     setLoading(true)
+    await fetchProfile(user.id)
     const [r, g] = await Promise.all([
       supabase.from('vouches').select('*, voucher:profiles!vouches_voucher_id_fkey(id,full_name,skill,trust_score)').eq('vouchee_id', user.id).order('created_at', { ascending: false }),
       supabase.from('vouches').select('*, vouchee:profiles!vouches_vouchee_id_fkey(id,full_name,skill)').eq('voucher_id', user.id).order('created_at', { ascending: false })
     ])
     setReceived(r.data || []); setGiven(g.data || [])
-    await fetchProfile(user.id)
     setLoading(false)
   }
 

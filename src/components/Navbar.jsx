@@ -8,15 +8,31 @@ export default function Navbar() {
   const navigate = useNavigate()
   const location = useLocation()
   const [open, setOpen] = useState(false)
-  const [unread, setUnread] = useState(0)
+  const [unreadVouches, setUnreadVouches] = useState(0)
+  const [unreadMessages, setUnreadMessages] = useState(0)
 
   useEffect(() => { setOpen(false) }, [location.pathname])
-  useEffect(() => { if (user) loadUnread() }, [user])
+  useEffect(() => {
+    if (user) {
+      loadUnread()
+      const ch = supabase.channel('navbar-messages')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `receiver_id=eq.${user.id}` },
+          () => loadUnread())
+        .subscribe()
+      return () => supabase.removeChannel(ch)
+    }
+  }, [user])
 
   async function loadUnread() {
-    const { count } = await supabase.from('vouches').select('*', { count: 'exact', head: true })
-      .eq('vouchee_id', user.id).gte('created_at', new Date(Date.now() - 7 * 86400000).toISOString())
-    setUnread(count || 0)
+    const [{ count: v }, { count: m }] = await Promise.all([
+      supabase.from('vouches').select('*', { count: 'exact', head: true })
+        .eq('vouchee_id', user.id)
+        .gte('created_at', new Date(Date.now() - 7 * 86400000).toISOString()),
+      supabase.from('messages').select('*', { count: 'exact', head: true })
+        .eq('receiver_id', user.id).eq('read', false)
+    ])
+    setUnreadVouches(v || 0)
+    setUnreadMessages(m || 0)
   }
 
   async function handleSignOut() {
@@ -38,29 +54,50 @@ export default function Navbar() {
     </Link>
   )
 
+  const IconBtn = ({ to, icon, count }) => (
+    <Link to={to} style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+      {icon}
+      {count > 0 && (
+        <span style={{ position: 'absolute', top: -5, right: -5, width: 17, height: 17, borderRadius: '50%', background: 'var(--amber)', color: 'white', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {count > 9 ? '9+' : count}
+        </span>
+      )}
+    </Link>
+  )
+
   return (
     <>
       <nav style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(250,248,243,0.97)', backdropFilter: 'blur(8px)', borderBottom: '1px solid var(--border)', padding: '0 1rem', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Logo />
 
-        {/* Desktop nav */}
+        {/* Desktop */}
         <div style={{ display: 'none', alignItems: 'center', gap: 20 }} id="desktop-nav">
-          <Link to="/search" style={{ fontSize: 14, color: 'var(--muted)' }}>Search</Link>
-          <Link to="/leaderboard" style={{ fontSize: 14, color: 'var(--muted)' }}>Leaderboard</Link>
-          {!user && <Link to="/how-it-works" style={{ fontSize: 14, color: 'var(--muted)' }}>How it works</Link>}
-          {user && <Link to="/vouch" style={{ fontSize: 14, color: 'var(--muted)' }}>Vouch</Link>}
+          <Link to="/search" style={{ fontSize: 14, color: 'var(--muted)', textDecoration: 'none' }}>Search</Link>
+          <Link to="/leaderboard" style={{ fontSize: 14, color: 'var(--muted)', textDecoration: 'none' }}>Leaderboard</Link>
+          {!user && <Link to="/how-it-works" style={{ fontSize: 14, color: 'var(--muted)', textDecoration: 'none' }}>How it works</Link>}
+          {user && <Link to="/vouch" style={{ fontSize: 14, color: 'var(--muted)', textDecoration: 'none' }}>Vouch</Link>}
           {user && (
-            <Link to="/notifications" style={{ position: 'relative', display: 'flex' }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-              {unread > 0 && <span style={{ position: 'absolute', top: -4, right: -4, width: 16, height: 16, borderRadius: '50%', background: 'var(--amber)', color: 'white', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{unread}</span>}
-            </Link>
-          )}
-          {user ? (
             <>
-              <Link to="/dashboard"><div style={{ width: 34, height: 34, borderRadius: '50%', background: 'var(--green)', border: '2px solid var(--green-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: 'white', cursor: 'pointer' }}>{profile?.full_name?.charAt(0).toUpperCase() || 'U'}</div></Link>
+              <IconBtn to="/messages" count={unreadMessages} icon={
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+              } />
+              <IconBtn to="/notifications" count={unreadVouches} icon={
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.8">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+              } />
+              <Link to="/dashboard">
+                <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'var(--green)', border: '2px solid var(--green-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: 'white', cursor: 'pointer' }}>
+                  {profile?.full_name?.charAt(0).toUpperCase() || 'U'}
+                </div>
+              </Link>
               <button onClick={handleSignOut} className="btn btn-outline" style={{ padding: '7px 14px', fontSize: 13 }}>Sign out</button>
             </>
-          ) : (
+          )}
+          {!user && (
             <>
               <Link to="/login"><button className="btn btn-outline" style={{ padding: '8px 18px' }}>Login</button></Link>
               <Link to="/signup"><button className="btn btn-green" style={{ padding: '8px 18px' }}>Join free</button></Link>
@@ -71,15 +108,24 @@ export default function Navbar() {
         {/* Mobile right */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }} id="mobile-right">
           {user && (
-            <Link to="/notifications" style={{ position: 'relative', display: 'flex' }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-              {unread > 0 && <span style={{ position: 'absolute', top: -4, right: -4, width: 16, height: 16, borderRadius: '50%', background: 'var(--amber)', color: 'white', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{unread}</span>}
-            </Link>
+            <>
+              <IconBtn to="/messages" count={unreadMessages} icon={
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+              } />
+              <IconBtn to="/notifications" count={unreadVouches} icon={
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.8">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+              } />
+            </>
           )}
-          <button onClick={() => setOpen(!open)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', flexDirection: 'column', gap: 5 }} aria-label="Menu">
-            <span style={{ display: 'block', width: 24, height: 2.5, background: 'var(--dark)', borderRadius: 2, transition: 'all 0.25s', transformOrigin: 'center', transform: open ? 'rotate(45deg) translate(5px, 5px)' : 'none' }} />
+          <button onClick={() => setOpen(!open)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <span style={{ display: 'block', width: 24, height: 2.5, background: 'var(--dark)', borderRadius: 2, transition: 'all 0.25s', transform: open ? 'rotate(45deg) translate(5px, 5px)' : 'none' }} />
             <span style={{ display: 'block', width: 24, height: 2.5, background: 'var(--dark)', borderRadius: 2, transition: 'all 0.25s', opacity: open ? 0 : 1 }} />
-            <span style={{ display: 'block', width: 24, height: 2.5, background: 'var(--dark)', borderRadius: 2, transition: 'all 0.25s', transformOrigin: 'center', transform: open ? 'rotate(-45deg) translate(5px, -5px)' : 'none' }} />
+            <span style={{ display: 'block', width: 24, height: 2.5, background: 'var(--dark)', borderRadius: 2, transition: 'all 0.25s', transform: open ? 'rotate(-45deg) translate(5px, -5px)' : 'none' }} />
           </button>
         </div>
       </nav>
@@ -100,16 +146,17 @@ export default function Navbar() {
                 </div>
               </div>
             )}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {[
-                { to: '/search', label: 'Search services', always: true },
-                { to: '/leaderboard', label: 'Leaderboard', always: true },
-                { to: '/how-it-works', label: 'How it works', always: true },
-                { to: '/dashboard', label: 'My dashboard', auth: true },
-                { to: '/vouch', label: 'Vouch for someone', auth: true },
-                { to: '/notifications', label: unread > 0 ? `Notifications (${unread})` : 'Notifications', auth: true },
-                { to: '/edit-profile', label: 'Edit profile', auth: true },
-              ].filter(i => i.always || (i.auth && user) || (i.guest && !user)).map(({ to, label }) => (
+                { to: '/search', label: 'Search services', show: true },
+                { to: '/leaderboard', label: 'Leaderboard', show: true },
+                { to: '/how-it-works', label: 'How it works', show: true },
+                { to: '/dashboard', label: 'My dashboard', show: !!user },
+                { to: '/vouch', label: 'Vouch for someone', show: !!user },
+                { to: '/messages', label: unreadMessages > 0 ? `Messages (${unreadMessages} new)` : 'Messages', show: !!user },
+                { to: '/notifications', label: unreadVouches > 0 ? `Notifications (${unreadVouches})` : 'Notifications', show: !!user },
+                { to: '/edit-profile', label: 'Edit profile', show: !!user },
+              ].filter(i => i.show).map(({ to, label }) => (
                 <Link key={to} to={to}>
                   <div style={{ padding: '13px 16px', fontSize: 16, fontWeight: 500, color: location.pathname === to ? 'var(--green)' : 'var(--dark)', background: location.pathname === to ? 'var(--green-pale)' : 'transparent', borderRadius: 10 }}>
                     {label}
@@ -132,14 +179,8 @@ export default function Navbar() {
       )}
 
       <style>{`
-        @media (min-width: 769px) {
-          #mobile-right { display: none !important; }
-          #desktop-nav { display: flex !important; }
-        }
-        @media (max-width: 768px) {
-          #desktop-nav { display: none !important; }
-          #mobile-right { display: flex !important; }
-        }
+        @media (min-width: 769px) { #mobile-right { display: none !important; } #desktop-nav { display: flex !important; } }
+        @media (max-width: 768px) { #desktop-nav { display: none !important; } #mobile-right { display: flex !important; } }
       `}</style>
     </>
   )

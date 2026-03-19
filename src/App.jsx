@@ -12,6 +12,7 @@ import Leaderboard from './pages/Leaderboard'
 import Notifications from './pages/Notifications'
 import EditProfile from './pages/EditProfile'
 import HowItWorks from './pages/HowItWorks'
+import Messages from './pages/Messages'
 import './index.css'
 
 function ProtectedRoute({ children }) {
@@ -38,6 +39,8 @@ function App() {
           <Route path="/vouch" element={<ProtectedRoute><Vouch /></ProtectedRoute>} />
           <Route path="/edit-profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
           <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+          <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+          <Route path="/messages/:chatWith" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
           <Route path="*" element={
             <div className="page" style={{ textAlign: 'center', paddingTop: '5rem' }}>
               <h2 style={{ fontFamily: 'Fraunces, serif', fontSize: 32, color: 'var(--green)', marginBottom: '1rem' }}>Page not found</h2>

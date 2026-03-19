@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../supabase'
 import { useAuth } from '../context/AuthContext'
-import Icon from '../components/Icon'
 
 export default function Notifications() {
   const { user } = useAuth()
@@ -43,7 +42,7 @@ export default function Notifications() {
 
       {notifs.length === 0 ? (
         <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
-          <div style={{ display:"flex",justifyContent:"center",marginBottom:"1rem" }}><div style={{ width:64,height:64,borderRadius:"50%",background:"var(--green-pale)",display:"flex",alignItems:"center",justifyContent:"center" }}><Icon name="bell" size={28} color="var(--green)" /></div></div>
+          <p style={{ fontSize: 36, marginBottom: '1rem' }}>🔔</p>
           <p style={{ fontWeight: 500, fontSize: 15, marginBottom: 6 }}>No notifications yet</p>
           <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: '1.5rem', lineHeight: 1.6 }}>Share your profile link and ask people who know your work to vouch for you.</p>
           <Link to="/dashboard"><button className="btn btn-green">Go to dashboard</button></Link>

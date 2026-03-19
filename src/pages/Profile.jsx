@@ -3,7 +3,6 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase'
 import { useAuth } from '../context/AuthContext'
 import TrustRing from '../components/TrustRing'
-import Icon from '../components/Icon'
 import Avatar from '../components/Avatar'
 
 export default function Profile() {
@@ -70,7 +69,7 @@ export default function Profile() {
         </div>
         <h1 style={{ fontSize: 24, color: 'var(--green)', marginBottom: 6 }}>{profile.full_name}</h1>
         {profile.skill && <span className="badge badge-green" style={{ marginBottom: 8 }}>{profile.skill}</span>}
-        {profile.location && <p style={{ fontSize: 13, color: 'var(--muted)', marginTop: 6 }}><Icon name="location" size={12} color="var(--muted)" style={{marginRight:4}} />{profile.location}</p>}
+        {profile.location && <p style={{ fontSize: 13, color: 'var(--muted)', marginTop: 6 }}>📍 {profile.location}</p>}
         <p style={{ fontSize: 13, fontWeight: 500, color: trustColor, marginTop: 6 }}>{trustLabel}</p>
         {profile.bio && (
           <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.7, marginTop: '1rem', padding: '0.875rem', background: 'var(--cream)', borderRadius: 10, textAlign: 'left' }}>

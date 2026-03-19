@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import Icon from '../components/Icon'
 
 const SKILLS = ['Mechanic','Electrician','Plumber','Lawyer','Doctor','Accountant','Graphic Designer','Web Developer','Chef / Caterer','Tailor / Fashion','Hair Stylist','Photographer','Driver','Carpenter','Painter','Real Estate Agent','Teacher / Tutor','Other']
 
@@ -52,7 +51,7 @@ export default function Signup() {
                 onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                  <div style={{ width:44,height:44,borderRadius:10,background:"var(--green-pale)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}><Icon name="mechanic" size={22} color="var(--green)" /></div>
+                  <span style={{ fontSize: 32 }}>🔧</span>
                   <div>
                     <p style={{ fontWeight: 600, fontSize: 16, color: 'var(--dark)', marginBottom: 3 }}>I offer a service</p>
                     <p style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.5 }}>I am a mechanic, lawyer, designer, chef or any skilled professional. I want to build my reputation and get clients.</p>
@@ -69,7 +68,7 @@ export default function Signup() {
                 onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                  <div style={{ width:44,height:44,borderRadius:10,background:"var(--green-pale)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}><Icon name="search" size={22} color="var(--green)" /></div>
+                  <span style={{ fontSize: 32 }}>🔍</span>
                   <div>
                     <p style={{ fontWeight: 600, fontSize: 16, color: 'var(--dark)', marginBottom: 3 }}>I want to find or vouch for people</p>
                     <p style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.5 }}>I want to find trusted service providers or vouch for people I know. I may not offer a service myself.</p>
@@ -90,7 +89,7 @@ export default function Signup() {
 
             {/* Type badge */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--green-pale)', borderRadius: 10, padding: '10px 14px', marginBottom: '1.25rem', border: '1px solid #B8E8D4' }}>
-              <Icon name={accountType === "provider" ? "mechanic" : "search"} size={20} color="var(--green-mid)" />
+              <span style={{ fontSize: 20 }}>{accountType === 'provider' ? '🔧' : '🔍'}</span>
               <p style={{ fontSize: 13, color: 'var(--green-mid)', fontWeight: 500 }}>
                 {accountType === 'provider' ? 'Service provider account' : 'Regular user account'}
               </p>

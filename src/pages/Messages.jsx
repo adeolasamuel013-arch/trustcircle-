@@ -2,7 +2,6 @@ import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../supabase'
 import { useAuth } from '../context/AuthContext'
-import Icon from '../components/Icon'
 
 export default function Messages() {
   const { user, profile } = useAuth()
@@ -201,7 +200,7 @@ export default function Messages() {
             </div>
           ) : conversations.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '3rem 1.25rem', color: 'var(--muted)' }}>
-              <div style={{ display:"flex",justifyContent:"center",marginBottom:"0.875rem" }}><div style={{ width:60,height:60,borderRadius:"50%",background:"var(--green-pale)",display:"flex",alignItems:"center",justifyContent:"center" }}><Icon name="message" size={26} color="var(--green)" /></div></div>
+              <p style={{ fontSize: 38, marginBottom: '0.875rem' }}>💬</p>
               <p style={{ fontWeight: 500, fontSize: 14, marginBottom: 6, color: 'var(--dark)' }}>No conversations yet</p>
               <p style={{ fontSize: 13, lineHeight: 1.6, marginBottom: '1rem' }}>Find a service and start chatting</p>
               <Link to="/search"><button className="btn btn-green" style={{ fontSize: 13, padding: '9px 16px' }}>Search services</button></Link>
@@ -232,7 +231,7 @@ export default function Messages() {
       <div className="msg-main" style={{ display: 'flex', flexDirection: 'column', background: '#F7F7F7' }}>
         {!activeChat ? (
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)', padding: '2rem', background: 'white' }}>
-            <div style={{ display:"flex",justifyContent:"center",marginBottom:"1rem" }}><div style={{ width:72,height:72,borderRadius:"50%",background:"var(--green-pale)",display:"flex",alignItems:"center",justifyContent:"center" }}><Icon name="message" size={32} color="var(--green)" /></div></div>
+            <p style={{ fontSize: 52, marginBottom: '1rem' }}>💬</p>
             <h3 style={{ fontSize: 20, color: 'var(--green)', marginBottom: 8, fontFamily: 'Fraunces, serif' }}>Your messages</h3>
             <p style={{ fontSize: 14, textAlign: 'center', lineHeight: 1.7, maxWidth: 280, marginBottom: '1.5rem' }}>Select a conversation or find someone to message</p>
             <Link to="/search"><button className="btn btn-green">Find someone</button></Link>
@@ -266,7 +265,7 @@ export default function Messages() {
                 </div>
               ) : messages.length === 0 ? (
                 <div style={{ textAlign: 'center', margin: 'auto', color: 'var(--muted)', padding: '2rem' }}>
-                  <div style={{ display:"flex",justifyContent:"center",marginBottom:10 }}><div style={{ width:56,height:56,borderRadius:"50%",background:"var(--green-pale)",display:"flex",alignItems:"center",justifyContent:"center" }}><Icon name="vouch" size={24} color="var(--green)" /></div></div>
+                  <p style={{ fontSize: 36, marginBottom: 10 }}>👋</p>
                   <p style={{ fontSize: 15, fontWeight: 500, color: 'var(--dark)', marginBottom: 6 }}>Start the conversation</p>
                   <p style={{ fontSize: 13 }}>Say hello or ask about their services.</p>
                 </div>

@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../supabase'
 import TrustRing from '../components/TrustRing'
-import Icon from '../components/Icon'
 import ShareCard from '../components/ShareCard'
 import AvatarUpload from '../components/AvatarUpload'
 

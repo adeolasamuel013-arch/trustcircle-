@@ -49,7 +49,7 @@ export default function HowItWorks() {
         { q: 'Is TrustCircle free?', a: 'Yes — joining, vouching for people and searching for services is completely free. Always.' },
         { q: 'How is the trust score calculated?', a: 'Each vouch adds points based on the voucher\'s own score. A vouch from someone with 80 points adds more than someone at 10 — just like real life.' },
         { q: 'What stops people vouching for strangers?', a: 'Your own reputation. Every vouch you give is visible on your profile. Vouching for unreliable people reflects badly on you.' },
-        { q: 'Why can\'t I log in after signing up?', a: 'Check your email for a confirmation email from Supabase. Click the link inside it and then you can log in.' },
+        { q: 'How do I grow my trust score fast?', a: 'Share your profile link with every client after every job and ask them to vouch for you. The more real vouches you collect, the higher your score grows.' },
         { q: 'What services can I find?', a: 'Mechanics, electricians, plumbers, lawyers, doctors, accountants, designers, developers, chefs, tailors, photographers, drivers, carpenters and more across Nigeria.' },
       ].map(({ q, a }) => (
         <details key={q} style={{ background: 'var(--cream)', borderRadius: 12, padding: '1.1rem 1.25rem', border: '1px solid var(--border)', marginBottom: '0.75rem', cursor: 'pointer' }}>

@@ -140,7 +140,7 @@ export default function Vouch() {
           </div>
 
           <label style={{ fontSize: 13, fontWeight: 500, display: 'block', marginBottom: 6 }}>
-            Why do you trust this person? <span style={{ color: 'var(--muted)', fontWeight: 400' }}>(optional but recommended)</span>
+            Why do you trust this person? <span style={{ color: 'var(--muted)', fontWeight: 400 }}>(optional but recommended)</span>
           </label>
           <textarea
             placeholder="E.g. Chidi fixed my generator perfectly — very professional, honest pricing, came on time."

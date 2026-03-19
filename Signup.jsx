@@ -2,12 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
-const SKILLS = [
-  'Mechanic', 'Electrician', 'Plumber', 'Lawyer', 'Doctor', 'Accountant',
-  'Graphic Designer', 'Web Developer', 'Chef / Caterer', 'Tailor / Fashion',
-  'Hair Stylist', 'Photographer', 'Driver', 'Carpenter', 'Painter',
-  'Real Estate Agent', 'Teacher / Tutor', 'Other'
-]
+const SKILLS = ['Mechanic','Electrician','Plumber','Lawyer','Doctor','Accountant','Graphic Designer','Web Developer','Chef / Caterer','Tailor / Fashion','Hair Stylist','Photographer','Driver','Carpenter','Painter','Real Estate Agent','Teacher / Tutor','Other']
 
 export default function Signup() {
   const { signUp } = useAuth()
@@ -15,10 +10,6 @@ export default function Signup() {
   const [form, setForm] = useState({ fullName: '', email: '', password: '', skill: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-
-  function handleChange(e) {
-    setForm(f => ({ ...f, [e.target.name]: e.target.value }))
-  }
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -34,50 +25,44 @@ export default function Signup() {
       await signUp(form.email, form.password, form.fullName, form.skill)
       navigate('/dashboard')
     } catch (err) {
-      setError(err.message || 'Something went wrong.')
-    } finally {
-      setLoading(false)
-    }
+      setError(err.message || 'Something went wrong. Please try again.')
+    } finally { setLoading(false) }
   }
 
   return (
-    <div style={{ minHeight: 'calc(100vh - 64px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 5%' }}>
+    <div style={{ minHeight: 'calc(100vh - 64px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem' }}>
       <div style={{ width: '100%', maxWidth: 420 }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <h1 style={{ fontSize: 28, color: 'var(--green)', marginBottom: 8 }}>Join TrustCircle</h1>
-          <p style={{ color: 'var(--muted)', fontSize: 14 }}>Build your trusted reputation in Nigeria.</p>
+          <h1 style={{ fontSize: 30, color: 'var(--green)', marginBottom: 8 }}>Join TrustCircle</h1>
+          <p style={{ color: 'var(--muted)', fontSize: 15 }}>Build your trusted reputation in Nigeria</p>
         </div>
-
-        <div className="card">
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div className="card" style={{ padding: '2rem' }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
             <div>
-              <label style={{ fontSize: 13, fontWeight: 500, color: 'var(--dark)', display: 'block', marginBottom: 6 }}>Full name</label>
-              <input name="fullName" placeholder="Chidi Okonkwo" value={form.fullName} onChange={handleChange} />
+              <label style={{ fontSize: 13, fontWeight: 500, display: 'block', marginBottom: 6 }}>Full name</label>
+              <input placeholder="Chidi Okonkwo" value={form.fullName} onChange={e => setForm(f => ({ ...f, fullName: e.target.value }))} />
             </div>
             <div>
-              <label style={{ fontSize: 13, fontWeight: 500, color: 'var(--dark)', display: 'block', marginBottom: 6 }}>Email</label>
-              <input name="email" type="email" placeholder="chidi@email.com" value={form.email} onChange={handleChange} />
+              <label style={{ fontSize: 13, fontWeight: 500, display: 'block', marginBottom: 6 }}>Email address</label>
+              <input type="email" placeholder="chidi@email.com" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
             </div>
             <div>
-              <label style={{ fontSize: 13, fontWeight: 500, color: 'var(--dark)', display: 'block', marginBottom: 6 }}>Password</label>
-              <input name="password" type="password" placeholder="Minimum 6 characters" value={form.password} onChange={handleChange} />
+              <label style={{ fontSize: 13, fontWeight: 500, display: 'block', marginBottom: 6 }}>Password</label>
+              <input type="password" placeholder="Minimum 6 characters" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} />
             </div>
             <div>
-              <label style={{ fontSize: 13, fontWeight: 500, color: 'var(--dark)', display: 'block', marginBottom: 6 }}>What service do you offer?</label>
-              <select name="skill" value={form.skill} onChange={handleChange}>
-                <option value="">Select your skill / service</option>
+              <label style={{ fontSize: 13, fontWeight: 500, display: 'block', marginBottom: 6 }}>Your service or skill</label>
+              <select value={form.skill} onChange={e => setForm(f => ({ ...f, skill: e.target.value }))}>
+                <option value="">Select what you do</option>
                 {SKILLS.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
-
-            {error && <p className="error-msg">{error}</p>}
-
-            <button type="submit" className="btn-primary" style={{ width: '100%', padding: '12px', fontSize: 15, marginTop: 4 }} disabled={loading}>
-              {loading ? <span className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }}></span> : 'Create my account'}
+            {error && <p className="error">{error}</p>}
+            <button type="submit" className="btn btn-green btn-full" disabled={loading} style={{ marginTop: 4, padding: '14px' }}>
+              {loading ? <span className="spin" style={{ width: 18, height: 18 }} /> : 'Create my account'}
             </button>
           </form>
         </div>
-
         <p style={{ textAlign: 'center', marginTop: '1.25rem', fontSize: 14, color: 'var(--muted)' }}>
           Already have an account? <Link to="/login" style={{ color: 'var(--green)', fontWeight: 500 }}>Sign in</Link>
         </p>

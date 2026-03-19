@@ -14,6 +14,7 @@ import EditProfile from './pages/EditProfile'
 import HowItWorks from './pages/HowItWorks'
 import Messages from './pages/Messages'
 import Admin from './pages/Admin'
+import Posts from './pages/Posts'
 import './index.css'
 
 function ProtectedRoute({ children }) {
@@ -43,6 +44,7 @@ function App() {
           <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
           <Route path="/messages/:chatWith" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+          <Route path="/posts" element={<Posts />} />
           <Route path="*" element={
             <div className="page" style={{ textAlign: 'center', paddingTop: '5rem' }}>
               <h2 style={{ fontFamily: 'Fraunces, serif', fontSize: 32, color: 'var(--green)', marginBottom: '1rem' }}>Page not found</h2>

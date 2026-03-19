@@ -74,6 +74,7 @@ export default function Navbar() {
         <div style={{ display: 'none', alignItems: 'center', gap: 20 }} id="desktop-nav">
           <Link to="/search" style={{ fontSize: 14, color: 'var(--muted)', textDecoration: 'none' }}>Search</Link>
           <Link to="/leaderboard" style={{ fontSize: 14, color: 'var(--muted)', textDecoration: 'none' }}>Leaderboard</Link>
+          <Link to="/posts" style={{ fontSize: 14, color: 'var(--muted)', textDecoration: 'none' }}>Showcase</Link>
           {!user && <Link to="/how-it-works" style={{ fontSize: 14, color: 'var(--muted)', textDecoration: 'none' }}>How it works</Link>}
           {user && <Link to="/vouch" style={{ fontSize: 14, color: 'var(--muted)', textDecoration: 'none' }}>Vouch</Link>}
           {user && (
@@ -156,6 +157,7 @@ export default function Navbar() {
               {[
                 { to: '/search', label: 'Search services', show: true },
                 { to: '/leaderboard', label: 'Leaderboard', show: true },
+              { to: '/posts', label: 'Work Showcase', show: true },
                 { to: '/how-it-works', label: 'How it works', show: true },
                 { to: '/dashboard', label: 'My dashboard', show: !!user },
                 { to: '/vouch', label: 'Vouch for someone', show: !!user },

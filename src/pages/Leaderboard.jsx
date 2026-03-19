@@ -13,7 +13,7 @@ export default function Leaderboard() {
 
   async function load() {
     setLoading(true)
-    let q = supabase.from('profiles').select('id,full_name,skill,trust_score,vouch_count').order('trust_score', { ascending: false }).gt('trust_score', 0).limit(50)
+    let q = supabase.from('profiles').select('id,full_name,skill,trust_score,vouch_count,avatar_url').order('trust_score', { ascending: false }).gt('trust_score', 0).limit(50)
     if (skill !== 'All') q = q.eq('skill', skill)
     const { data } = await q
     setLeaders(data || []); setLoading(false)
@@ -40,8 +40,8 @@ export default function Leaderboard() {
             <div style={{ width: 32, textAlign: 'center', flexShrink: 0 }}>
               {i < 3 ? <span style={{ fontSize: 22 }}>{['🥇','🥈','🥉'][i]}</span> : <span style={{ fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: 15, color: 'var(--muted)' }}>#{i+1}</span>}
             </div>
-            <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--green-pale)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700, color: 'var(--green)', flexShrink: 0 }}>
-              {p.full_name?.charAt(0).toUpperCase()}
+            <div style={{ width: 44, height: 44, borderRadius: '50%', overflow: 'hidden', background: 'var(--green-pale)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700, color: 'var(--green)', flexShrink: 0 }}>
+              {p.avatar_url ? <img src={p.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : p.full_name?.charAt(0).toUpperCase()}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ fontWeight: 500, fontSize: 15 }}>{p.full_name}</p>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../supabase'
+import AvatarUpload from '../components/AvatarUpload'
 
 const SKILLS = ['Mechanic','Electrician','Plumber','Lawyer','Doctor','Accountant','Graphic Designer','Web Developer','Chef / Caterer','Tailor / Fashion','Hair Stylist','Photographer','Driver','Carpenter','Painter','Real Estate Agent','Teacher / Tutor','Other']
 
@@ -30,6 +31,10 @@ export default function EditProfile() {
     <div className="page-sm" style={{ padding: '2rem 1rem' }}>
       <h1 style={{ fontSize: 26, color: 'var(--green)', marginBottom: 8 }}>Edit profile</h1>
       <p style={{ color: 'var(--muted)', fontSize: 14, marginBottom: '1.5rem' }}>A complete profile builds more trust with people who find you.</p>
+
+      <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+        <AvatarUpload size={90} />
+      </div>
 
       <div className="card" style={{ padding: '1.5rem' }}>
         <form onSubmit={save} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>

@@ -90,8 +90,11 @@ export default function Navbar() {
                 </svg>
               } />
               <Link to="/dashboard">
-                <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'var(--green)', border: '2px solid var(--green-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: 'white', cursor: 'pointer' }}>
-                  {profile?.full_name?.charAt(0).toUpperCase() || 'U'}
+                <div style={{ width: 34, height: 34, borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--green-light)', cursor: 'pointer', background: 'var(--green)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  {profile?.avatar_url
+                    ? <img src={profile.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    : <span style={{ fontSize: 13, fontWeight: 700, color: 'white' }}>{profile?.full_name?.charAt(0).toUpperCase() || 'U'}</span>
+                  }
                 </div>
               </Link>
               <button onClick={handleSignOut} className="btn btn-outline" style={{ padding: '7px 14px', fontSize: 13 }}>Sign out</button>
@@ -137,8 +140,11 @@ export default function Navbar() {
           <div style={{ position: 'fixed', top: 64, left: 0, right: 0, background: 'var(--cream)', zIndex: 99, borderBottom: '1px solid var(--border)', padding: '1rem' }}>
             {user && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '1rem', background: 'var(--green-pale)', borderRadius: 12, marginBottom: '1rem' }}>
-                <div style={{ width: 46, height: 46, borderRadius: '50%', background: 'var(--green)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 700, color: 'white', flexShrink: 0 }}>
-                  {profile?.full_name?.charAt(0).toUpperCase() || 'U'}
+                <div style={{ width: 46, height: 46, borderRadius: '50%', overflow: 'hidden', background: 'var(--green)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  {profile?.avatar_url
+                    ? <img src={profile.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    : <span style={{ fontSize: 18, fontWeight: 700, color: 'white' }}>{profile?.full_name?.charAt(0).toUpperCase() || 'U'}</span>
+                  }
                 </div>
                 <div>
                   <p style={{ fontWeight: 600, fontSize: 15, color: 'var(--green)' }}>{profile?.full_name}</p>

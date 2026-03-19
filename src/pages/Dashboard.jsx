@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { supabase } from '../supabase'
 import TrustRing from '../components/TrustRing'
 import ShareCard from '../components/ShareCard'
+import AvatarUpload from '../components/AvatarUpload'
 
 export default function Dashboard() {
   const { user, profile, fetchProfile } = useAuth()
@@ -40,9 +41,7 @@ export default function Dashboard() {
 
       {/* Profile header */}
       <div className="card" style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center', marginBottom: '1.25rem', borderTop: '3px solid var(--green-light)', padding: '1.5rem' }}>
-        <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'var(--green)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, fontFamily: 'Fraunces, serif', fontWeight: 700, color: 'white', flexShrink: 0 }}>
-          {profile?.full_name?.charAt(0).toUpperCase()}
-        </div>
+        <AvatarUpload size={72} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <h2 style={{ fontSize: 20, color: 'var(--green)', marginBottom: 4 }}>{profile?.full_name}</h2>
           <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 6 }}>{profile?.email}</p>

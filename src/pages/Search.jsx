@@ -15,7 +15,7 @@ export default function Search() {
 
   async function doSearch(q, s) {
     setLoading(true); setSearched(true); setSelected(null)
-    let r = supabase.from('profiles').select('id,full_name,skill,trust_score,vouch_count').order('trust_score', { ascending: false }).limit(20)
+    let r = supabase.from('profiles').select('id,full_name,skill,trust_score,vouch_count,avatar_url').order('trust_score', { ascending: false }).limit(20)
     if (q?.trim()) r = r.ilike('full_name', `%${q}%`)
     if (s && s !== 'All') r = r.eq('skill', s)
     const { data } = await r
@@ -71,7 +71,9 @@ export default function Search() {
               <div className="card" style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)' }}><p>No results found. Try a different search.</p></div>
             ) : results.map(r => (
               <div key={r.id} className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', marginBottom: '0.75rem', padding: '1rem', borderLeft: selected?.id === r.id ? '3px solid var(--green-light)' : '1px solid var(--border)' }} onClick={() => loadProfile(r.id)}>
-                <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--green-pale)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700, color: 'var(--green)', flexShrink: 0 }}>{r.full_name?.charAt(0).toUpperCase()}</div>
+                <div style={{ width: 44, height: 44, borderRadius: '50%', overflow: 'hidden', background: 'var(--green-pale)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700, color: 'var(--green)', flexShrink: 0 }}>
+                  {r.avatar_url ? <img src={r.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : r.full_name?.charAt(0).toUpperCase()}
+                </div>
                 <div style={{ flex: 1 }}>
                   <p style={{ fontWeight: 500, fontSize: 15 }}>{r.full_name}</p>
                   <p style={{ fontSize: 13, color: 'var(--muted)' }}>{r.skill}</p>
@@ -88,7 +90,9 @@ export default function Search() {
             <div>
               <div className="card" style={{ borderTop: '3px solid var(--green-light)', padding: '1.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
-                  <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--green)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 700, color: 'white' }}>{selected.full_name?.charAt(0).toUpperCase()}</div>
+                  <div style={{ width: 56, height: 56, borderRadius: '50%', overflow: 'hidden', background: 'var(--green)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 700, color: 'white' }}>
+                    {selected.avatar_url ? <img src={selected.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : selected.full_name?.charAt(0).toUpperCase()}
+                  </div>
                   <div style={{ flex: 1 }}>
                     <h2 style={{ fontSize: 18, color: 'var(--green)' }}>{selected.full_name}</h2>
                     <span className="badge badge-green" style={{ marginTop: 4 }}>{selected.skill}</span>

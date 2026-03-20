@@ -108,6 +108,19 @@ export default function Messages() {
     if (saved) {
       setMessages(m => m.map(x => x.id === temp.id ? saved : x))
       setConversations(c => c.map(x => x.person.id === activeChat ? { ...x, lastMessage: saved } : x))
+
+      // Send email notification (fire and forget)
+      if (activePerson?.email) {
+        supabase.functions.invoke('notify-message', {
+          body: {
+            receiverName: activePerson.full_name,
+            receiverEmail: activePerson.email,
+            senderName: profile?.full_name || 'Someone',
+            messagePreview: content,
+            senderId: user.id,
+          },
+        }).catch(() => {})
+      }
     }
     setSending(false)
   }

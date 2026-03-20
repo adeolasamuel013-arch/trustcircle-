@@ -56,6 +56,21 @@ export default function Vouch() {
     })
     if (vouchError) { setError('Something went wrong. Please try again.'); setSubmitting(false); return }
     await supabase.from('profiles').update({ trust_score: newScore, vouch_count: newCount }).eq('id', selected.id)
+
+    // Send email notification (fire and forget — don't block UI)
+    if (selected.email) {
+      supabase.functions.invoke('notify-vouch', {
+        body: {
+          voucheeName: selected.full_name,
+          voucheeEmail: selected.email,
+          voucherName: profile?.full_name || 'Someone',
+          message: message.trim() || null,
+          newScore,
+          weight,
+        },
+      }).catch(() => {}) // silently ignore email errors
+    }
+
     setSuccess(`You vouched for ${selected.full_name}! Their trust score increased by ${weight} points to ${newScore}.`)
     setSelected(null); setSearch(''); setResults([]); setMessage('')
     setSubmitting(false)

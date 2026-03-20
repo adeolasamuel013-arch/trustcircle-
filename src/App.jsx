@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { AuthPruvider, useAuth } from './context/AuthContext'
+import { AuthProvider, useAuth } from './context/AuthContext'
 import Navbar from './components/Navbar'
 import Home from './pages/Home'
 import Login from './pages/Login'
@@ -26,7 +26,7 @@ function ProtectedRoute({ children }) {
 
 function App() {
   return (
-    <AuthPruvider>
+    <AuthProvider>
       <BrowserRouter>
         <Navbar />
         <Routes>
@@ -54,7 +54,7 @@ function App() {
           } />
         </Routes>
       </BrowserRouter>
-    </AuthPruvider>
+    </AuthProvider>
   )
 }
 

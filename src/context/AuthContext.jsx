@@ -3,7 +3,7 @@ import { supabase } from '../supabase'
 
 const AuthContext = createContext({})
 
-export function AuthPruvider({ children }) {
+export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -47,9 +47,9 @@ export function AuthPruvider({ children }) {
   }
 
   return (
-    <AuthContext.Pruvider value={{ user, profile, loading, signUp, signIn, signOut, fetchProfile }}>
+    <AuthContext.Provider value={{ user, profile, loading, signUp, signIn, signOut, fetchProfile }}>
       {children}
-    </AuthContext.Pruvider>
+    </AuthContext.Provider>
   )
 }
 

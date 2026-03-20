@@ -56,26 +56,6 @@ export default function Vouch() {
     })
     if (vouchError) { setError('Something went wrong. Please try again.'); setSubmitting(false); return }
     await supabase.from('profiles').update({ trust_score: newScore, vouch_count: newCount }).eq('id', selected.id)
-
-    // Send email notification
-    try {
-      await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/notify-vouch`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-        },
-        body: JSON.stringify({
-          record: {
-            voucher_id: user.id,
-            vouchee_id: selected.id,
-            message: message.trim() || null,
-            weight
-          }
-        })
-      })
-    } catch (e) { console.log('Email notification failed silently', e) }
-
     setSuccess(`You vouched for ${selected.full_name}! Their trust score increased by ${weight} points to ${newScore}.`)
     setSelected(null); setSearch(''); setResults([]); setMessage('')
     setSubmitting(false)

@@ -71,12 +71,12 @@ export default function Home() {
             "Do you know a good mechanic?"
           </h2>
           <p style={{ color: 'rgba(255,255,255,0.75)', textAlign: 'center', fontSize: 16, lineHeight: 1.8, maxWidth: 560, margin: '0 auto 2.5rem' }}>
-            Every Nigerian asks this on WhatsApp. You get 10 different names. Still don't know who to trust. Prov fixes this forever.
+            Every Nigerian asks this on WhatsApp. You get 10 different names. Still don't know who to trust. Pruv fixes this forever.
           </p>
           <div className="compare-grid">
             {[
-              { icon: '❌', title: 'Before Prov', bg: 'rgba(255,255,255,0.06)', points: ['Random Google reviews', 'Strangers with fake ratings', 'Post on WhatsApp and pray', 'Risk getting scammed'] },
-              { icon: '✅', title: 'With Prov', bg: 'rgba(46,204,138,0.15)', points: ['Real people vouch for them', 'AI trust score from your network', 'Find verified professionals', 'Safe and transparent always'] },
+              { icon: '❌', title: 'Before Pruv', bg: 'rgba(255,255,255,0.06)', points: ['Random Google reviews', 'Strangers with fake ratings', 'Post on WhatsApp and pray', 'Risk getting scammed'] },
+              { icon: '✅', title: 'With Pruv', bg: 'rgba(46,204,138,0.15)', points: ['Real people vouch for them', 'AI trust score from your network', 'Find verified professionals', 'Safe and transparent always'] },
             ].map(({ icon, title, bg, points }) => (
               <div key={title} style={{ background: bg, borderRadius: 16, padding: '1.75rem', border: '1px solid rgba(255,255,255,0.12)' }}>
                 <p style={{ fontSize: 36, marginBottom: '1rem' }}>{icon}</p>
@@ -137,12 +137,12 @@ export default function Home() {
       {/* TESTIMONIALS */}
       <section style={{ padding: '4rem 1.25rem', background: 'var(--cream)' }}>
         <div style={{ maxWidth: 1000, margin: '0 auto' }}>
-          <h2 style={{ fontSize: 'clamp(1.6rem, 5vw, 2.5rem)', color: 'var(--green)', textAlign: 'center', marginBottom: '2rem' }}>Why Nigerians love Prov</h2>
+          <h2 style={{ fontSize: 'clamp(1.6rem, 5vw, 2.5rem)', color: 'var(--green)', textAlign: 'center', marginBottom: '2rem' }}>Why Nigerians love Pruv</h2>
           <div className="testimonials-grid">
             {[
-              { q: 'I found my mechanic through Prov. He was vouched by 3 people I know personally. Transparent pricing and excellent work.', n: 'Funke A.', l: 'Lagos' },
-              { q: 'As a lawyer, my reputation is everything. Prov lets clients verify me before they call. My client base has grown massively.', n: 'Emeka O.', l: 'Abuja' },
-              { q: 'I was scammed by a fake electrician before. Now I only use Prov. The trust score system actually works — real referrals only.', n: 'Blessing I.', l: 'Port Harcourt' },
+              { q: 'I found my mechanic through Pruv. He was vouched by 3 people I know personally. Transparent pricing and excellent work.', n: 'Funke A.', l: 'Lagos' },
+              { q: 'As a lawyer, my reputation is everything. Pruv lets clients verify me before they call. My client base has grown massively.', n: 'Emeka O.', l: 'Abuja' },
+              { q: 'I was scammed by a fake electrician before. Now I only use Pruv. The trust score system actually works — real referrals only.', n: 'Blessing I.', l: 'Port Harcourt' },
             ].map(({ q, n, l }) => (
               <div key={n} style={{ background: 'white', borderRadius: 16, padding: '1.5rem', border: '1px solid var(--border)' }}>
                 <p style={{ fontSize: 30, color: 'var(--green-light)', marginBottom: '0.75rem', lineHeight: 1 }}>"</p>
@@ -165,10 +165,10 @@ export default function Home() {
         <div style={{ maxWidth: 680, margin: '0 auto' }}>
           <h2 style={{ fontSize: 'clamp(1.6rem, 5vw, 2.5rem)', color: 'var(--green)', textAlign: 'center', marginBottom: '1.75rem' }}>Common questions</h2>
           {[
-            { q: 'Is Prov free to use?', a: 'Yes — joining, vouching for people and searching for services is completely free. Always.' },
+            { q: 'Is Pruv free to use?', a: 'Yes — joining, vouching for people and searching for services is completely free. Always.' },
             { q: 'How is the trust score calculated?', a: 'Every vouch adds points based on the voucher\'s own score. A vouch from someone with 80 points adds more than someone at 10 — just like real-life reputation.' },
             { q: 'What stops people vouching for strangers?', a: 'Your own reputation. Every vouch you give is public on your profile. Vouching for unreliable people reflects badly on you.' },
-            { q: 'Is Prov free to join?', a: 'Yes — completely free to join, vouch for people and search for services. Always.' },
+            { q: 'Is Pruv free to join?', a: 'Yes — completely free to join, vouch for people and search for services. Always.' },
             { q: 'What services can I find?', a: 'Mechanics, electricians, plumbers, lawyers, doctors, accountants, designers, developers, chefs, tailors, photographers, drivers, carpenters and more across Nigeria.' },
           ].map(({ q, a }) => (
             <details key={q} style={{ background: 'var(--cream)', borderRadius: 12, padding: '1.1rem 1.25rem', border: '1px solid var(--border)', marginBottom: '0.75rem', cursor: 'pointer' }}>
@@ -185,7 +185,7 @@ export default function Home() {
       <section style={{ margin: '0 1rem 3rem', background: 'var(--green)', borderRadius: 20, padding: '4rem 1.5rem', textAlign: 'center' }}>
         <h2 style={{ fontSize: 'clamp(1.8rem, 6vw, 3rem)', color: 'white', marginBottom: '1rem', maxWidth: 560, margin: '0 auto 1rem' }}>
           Nigeria runs on "who you know."<br />
-          <span style={{ color: 'var(--green-light)' }}>Now it runs on Prov.</span>
+          <span style={{ color: 'var(--green-light)' }}>Now it runs on Pruv.</span>
         </h2>
         <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 16, maxWidth: 440, margin: '0 auto 2rem', lineHeight: 1.7 }}>
           Join thousands of Nigerians building their digital reputation and finding trusted professionals.
@@ -198,7 +198,7 @@ export default function Home() {
 
       {/* FOOTER */}
       <footer style={{ padding: '2rem 1.25rem', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
-        <p style={{ fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: 17, color: 'var(--green)', marginBottom: 6 }}>Prov</p>
+        <p style={{ fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: 17, color: 'var(--green)', marginBottom: 6 }}>Pruv</p>
         <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: '1rem' }}>Built for Nigeria  © 2026</p>
         <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
           {[['/', 'Home'], ['/search', 'Search'], ['/leaderboard', 'Leaderboard'], ['/how-it-works', 'How it works'], ['/signup', 'Sign up']].map(([to, label]) => (

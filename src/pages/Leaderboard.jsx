@@ -27,7 +27,7 @@ export default function Leaderboard() {
     <div className="page" style={{ maxWidth: 640 }}>
       <div className="page-header">
         <h1>Leaderboard</h1>
-        <p>The most trusted people on Prov — ranked by real community vouches.</p>
+        <p>The most trusted people on Pruv — ranked by real community vouches.</p>
       </div>
 
       {loading ? (

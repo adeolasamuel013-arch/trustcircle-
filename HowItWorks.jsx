@@ -1,132 +1,153 @@
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
-const steps = [
-  {
-    num: '01', title: 'Sign up and set your skill',
-    body: 'Create a free account and tell the network what service you offer — whether you\'re a mechanic in Lagos, a lawyer in Abuja, or a tailor in Port Harcourt.'
-  },
-  {
-    num: '02', title: 'Build your trust through vouches',
-    body: 'Your trust score starts at zero. It only grows when real people in the network vouch for your work. Every vouch carries a weight based on how trusted the voucher is.'
-  },
-  {
-    num: '03', title: 'Vouch for people you know',
-    body: 'Know someone who does great work? Vouch for them. Your reputation is linked to every vouch you give — so only vouch for people you genuinely trust.'
-  },
-  {
-    num: '04', title: 'Search trusted services',
-    body: 'When you need help, search by skill or name. TrustCircle surfaces the most trusted people available — ranked by real vouches, not paid promotions or fake reviews.'
-  },
-  {
-    num: '05', title: 'AI calculates trust chains',
-    body: 'Our algorithm weighs each vouch by the voucher\'s own trust score. A vouch from a highly trusted person carries more weight — just like in real life, reputation travels through networks.'
-  },
-]
+const SKILLS = ['Mechanic','Electrician','Plumber','Lawyer','Doctor','Accountant','Graphic Designer','Web Developer','Chef / Caterer','Tailor / Fashion','Hair Stylist','Photographer','Driver','Carpenter','Painter','Real Estate Agent','Teacher / Tutor','Other']
 
-const faqs = [
-  {
-    q: 'Is TrustCircle free?',
-    a: 'Yes — creating a profile, vouching for people, and searching for services is completely free. We may introduce premium features in the future.'
-  },
-  {
-    q: 'Can I remove a vouch I gave?',
-    a: 'Currently vouches are permanent, which is by design — it encourages people to only vouch for people they truly trust. We may introduce vouch editing in future.'
-  },
-  {
-    q: 'What stops people from vouching for strangers?',
-    a: 'Your own reputation. Every vouch you give is publicly visible on your profile. If you vouch for someone unreliable, it reflects on you. The system is designed so that your vouches are an extension of your own credibility.'
-  },
-  {
-    q: 'How is the trust score calculated?',
-    a: 'Each vouch adds points to your score based on the voucher\'s own trust level. A vouch from someone with a score of 80 carries more weight than one from someone at 10. Your score is capped at 100.'
-  },
-  {
-    q: 'What services can I find on TrustCircle?',
-    a: 'Mechanics, electricians, plumbers, lawyers, doctors, accountants, designers, developers, chefs, tailors, photographers, drivers, carpenters, and more — any skilled service provider in Nigeria.'
-  },
-]
+export default function Signup() {
+  const { signUp } = useAuth()
+  const navigate = useNavigate()
+  const [step, setStep] = useState(1) // 1 = choose type, 2 = fill form
+  const [accountType, setAccountType] = useState('')
+  const [form, setForm] = useState({ fullName: '', email: '', password: '', skill: '' })
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-export default function HowItWorks() {
+  async function handleSubmit(e) {
+    e.preventDefault()
+    setError('')
+    if (!form.fullName || !form.email || !form.password) { setError('Please fill in all fields.'); return }
+    if (form.password.length < 6) { setError('Password must be at least 6 characters.'); return }
+    if (accountType === 'provider' && !form.skill) { setError('Please select your skill.'); return }
+    setLoading(true)
+    try {
+      await signUp(form.email, form.password, form.fullName, accountType === 'provider' ? form.skill : null)
+      navigate('/dashboard')
+    } catch (err) {
+      setError(err.message || 'Something went wrong. Please try again.')
+    } finally { setLoading(false) }
+  }
+
+  const types = [
+    {
+      id: 'provider',
+      title: 'I offer a service',
+      desc: 'Mechanic, lawyer, designer, chef — I want to build my reputation and get more clients.',
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+        </svg>
+      )
+    },
+    {
+      id: 'user',
+      title: 'I want to find or vouch',
+      desc: 'I want to find trusted professionals or vouch for people I know. I may not offer a service.',
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      )
+    }
+  ]
+
   return (
-    <div style={{ maxWidth: 800, margin: '0 auto', padding: '3rem 5%' }}>
+    <div style={{ minHeight: 'calc(100vh - 64px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 1.25rem', background: 'var(--cream)' }}>
+      <div style={{ width: '100%', maxWidth: 440 }}>
 
-      {/* Hero */}
-      <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-        <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--green-light)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>How TrustCircle works</p>
-        <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', color: 'var(--green)', marginBottom: '1rem', lineHeight: 1.15 }}>
-          Nigeria runs on<br />"who you know."
-        </h1>
-        <p style={{ fontSize: 16, color: 'var(--muted)', maxWidth: 520, margin: '0 auto', lineHeight: 1.7 }}>
-          TrustCircle digitises the way Nigerians already find trusted people — through referrals — and uses AI to scale it to millions.
-        </p>
-      </div>
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <h1 style={{ fontSize: 26, color: 'var(--green)', marginBottom: 6 }}>Join Pruv</h1>
+          <p style={{ color: 'var(--muted)', fontSize: 15 }}>Free to join. Always.</p>
+        </div>
 
-      {/* Steps */}
-      <div style={{ marginBottom: '4rem' }}>
-        {steps.map((s, i) => (
-          <div key={s.num} style={{
-            display: 'flex', gap: '1.5rem', marginBottom: '1.5rem',
-            paddingBottom: '1.5rem',
-            borderBottom: i < steps.length - 1 ? '1px solid var(--border)' : 'none'
-          }}>
-            <div style={{
-              flexShrink: 0, width: 48, height: 48,
-              borderRadius: '50%', background: 'var(--green-pale)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: 16, color: 'var(--green)'
-            }}>
-              {s.num}
+        {/* STEP 1 — Choose type */}
+        {step === 1 && (
+          <div>
+            <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--dark)', textAlign: 'center', marginBottom: '1.25rem' }}>What brings you here?</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: '1.25rem' }}>
+              {types.map(t => (
+                <button key={t.id} onClick={() => { setAccountType(t.id); setStep(2) }}
+                  style={{ background: 'var(--white)', border: `1.5px solid ${accountType === t.id ? 'var(--green)' : 'var(--border)'}`, borderRadius: 14, padding: '1.25rem 1.5rem', cursor: 'pointer', textAlign: 'left', fontFamily: 'DM Sans, sans-serif', transition: 'all 0.15s', display: 'flex', alignItems: 'flex-start', gap: 14, boxShadow: 'var(--shadow-sm)' }}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--green-light)'}
+                  onMouseLeave={e => e.currentTarget.style.borderColor = accountType === t.id ? 'var(--green)' : 'var(--border)'}
+                >
+                  <div style={{ width: 42, height: 42, borderRadius: 10, background: 'var(--green-pale)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--green)', flexShrink: 0 }}>
+                    {t.icon}
+                  </div>
+                  <div>
+                    <p style={{ fontWeight: 600, fontSize: 15, color: 'var(--dark)', marginBottom: 4 }}>{t.title}</p>
+                    <p style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.5 }}>{t.desc}</p>
+                  </div>
+                </button>
+              ))}
             </div>
-            <div>
-              <h3 style={{ fontSize: 17, color: 'var(--green)', marginBottom: 8 }}>{s.title}</h3>
-              <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.7 }}>{s.body}</p>
-            </div>
+            <p style={{ textAlign: 'center', fontSize: 14, color: 'var(--muted)' }}>
+              Already have an account?{' '}
+              <Link to="/login" style={{ color: 'var(--green)', fontWeight: 600 }}>Sign in</Link>
+            </p>
           </div>
-        ))}
-      </div>
+        )}
 
-      {/* Trust score explainer */}
-      <div className="card" style={{ borderTop: '3px solid var(--amber)', marginBottom: '4rem', background: 'var(--amber-light)' }}>
-        <h2 style={{ fontSize: 20, color: 'var(--green)', marginBottom: '1rem' }}>How the trust score works</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
-          {[
-            { range: '0 – 20', label: 'New member', color: 'var(--muted)', desc: 'Just joined, no vouches yet.' },
-            { range: '20 – 40', label: 'Building trust', color: '#9A6700', desc: 'A few vouches from new members.' },
-            { range: '40 – 70', label: 'Growing', color: 'var(--amber)', desc: 'Vouched by established members.' },
-            { range: '70 – 100', label: 'Highly trusted', color: 'var(--green-mid)', desc: 'Many vouches from trusted people.' },
-          ].map(({ range, label, color, desc }) => (
-            <div key={range} style={{ background: 'white', borderRadius: 'var(--radius-sm)', padding: '1rem' }}>
-              <p style={{ fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: 22, color, marginBottom: 4 }}>{range}</p>
-              <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--dark)', marginBottom: 4 }}>{label}</p>
-              <p style={{ fontSize: 12, color: 'var(--muted)', lineHeight: 1.5 }}>{desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
+        {/* STEP 2 — Fill form */}
+        {step === 2 && (
+          <div>
+            <button onClick={() => setStep(1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: 14, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'DM Sans, sans-serif', padding: 0 }}>
+              ← Back
+            </button>
 
-      {/* FAQs */}
-      <div style={{ marginBottom: '3rem' }}>
-        <h2 style={{ fontSize: 22, color: 'var(--green)', marginBottom: '1.5rem' }}>Frequently asked questions</h2>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {faqs.map(({ q, a }) => (
-            <details key={q} className="card" style={{ cursor: 'pointer' }}>
-              <summary style={{ fontSize: 15, fontWeight: 500, color: 'var(--dark)', listStyle: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                {q}
-                <span style={{ fontSize: 18, color: 'var(--muted)', flexShrink: 0, marginLeft: 12 }}>+</span>
-              </summary>
-              <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.7, marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
-                {a}
+            {/* Type badge */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--green-pale)', borderRadius: 10, padding: '10px 14px', marginBottom: '1.5rem', border: '1px solid #c3e8d8' }}>
+              <div style={{ width: 28, height: 28, borderRadius: 7, background: 'var(--green)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {accountType === 'provider'
+                  ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                  : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                }
+              </div>
+              <p style={{ fontSize: 13, color: 'var(--green-mid)', fontWeight: 600 }}>
+                {accountType === 'provider' ? 'Service provider account' : 'Regular user account'}
               </p>
-            </details>
-          ))}
-        </div>
-      </div>
+            </div>
 
-      {/* CTA */}
-      <div style={{ textAlign: 'center', padding: '3rem', background: 'var(--green)', borderRadius: 16 }}>
-        <h2 style={{ fontSize: 24, color: 'white', marginBottom: '0.75rem' }}>Ready to build your trust?</h2>
-        <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '1.5rem', fontSize: 15 }}>Join TrustCircle free today.</p>
-        <Link to="/signup"><button className="btn-amber" style={{ fontSize: 15, padding: '13px 32px', borderRadius: 10 }}>Get started</button></Link>
+            <div className="card">
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
+                <div>
+                  <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 7, color: 'var(--dark)' }}>Full name</label>
+                  <input placeholder="Chidi Okonkwo" value={form.fullName} onChange={e => setForm(f => ({ ...f, fullName: e.target.value }))} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 7, color: 'var(--dark)' }}>Email address</label>
+                  <input type="email" placeholder="you@email.com" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+                </div>
+                <div>
+                  <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 7, color: 'var(--dark)' }}>Password</label>
+                  <input type="password" placeholder="Minimum 6 characters" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} />
+                </div>
+                {accountType === 'provider' && (
+                  <div>
+                    <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 7, color: 'var(--dark)' }}>Your skill or service</label>
+                    <select value={form.skill} onChange={e => setForm(f => ({ ...f, skill: e.target.value }))}>
+                      <option value="">Select what you do</option>
+                      {SKILLS.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                )}
+                {error && (
+                  <div style={{ background: '#FEE2E2', borderRadius: 8, padding: '10px 14px' }}>
+                    <p style={{ fontSize: 13, color: 'var(--danger)' }}>{error}</p>
+                  </div>
+                )}
+                <button type="submit" className="btn btn-green btn-full" disabled={loading} style={{ padding: '14px', fontSize: 15, marginTop: 4 }}>
+                  {loading ? <span className="spin" style={{ width: 18, height: 18 }} /> : 'Create my account'}
+                </button>
+              </form>
+            </div>
+
+            <p style={{ textAlign: 'center', marginTop: '1.25rem', fontSize: 14, color: 'var(--muted)' }}>
+              Already have an account?{' '}
+              <Link to="/login" style={{ color: 'var(--green)', fontWeight: 600 }}>Sign in</Link>
+            </p>
+          </div>
+        )}
       </div>
     </div>
   )

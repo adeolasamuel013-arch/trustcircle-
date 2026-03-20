@@ -1,121 +1,86 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { supabase } from '../supabase'
-import TrustRing from '../components/TrustRing'
+import Avatar from '../components/Avatar'
 
-export default function Profile() {
-  const { id } = useParams()
-  const [profile, setProfile] = useState(null)
-  const [vouches, setVouches] = useState([])
+export default function Leaderboard() {
+  const [leaders, setLeaders] = useState([])
   const [loading, setLoading] = useState(true)
-  const [notFound, setNotFound] = useState(false)
 
-  useEffect(() => {
-    loadProfile()
-  }, [id])
+  useEffect(() => { load() }, [])
 
-  async function loadProfile() {
+  async function load() {
     setLoading(true)
-    const { data: prof } = await supabase.from('profiles').select('*').eq('id', id).single()
-    if (!prof) { setNotFound(true); setLoading(false); return }
-    setProfile(prof)
-    const { data: v } = await supabase
-      .from('vouches')
-      .select('*, voucher:profiles!vouches_voucher_id_fkey(id, full_name, skill, trust_score)')
-      .eq('vouchee_id', id)
-      .order('created_at', { ascending: false })
-    setVouches(v || [])
+    const { data } = await supabase
+      .from('profiles')
+      .select('id,full_name,skill,trust_score,vouch_count,avatar_url')
+      .order('trust_score', { ascending: false })
+      .gt('trust_score', 0)
+      .limit(50)
+    setLeaders(data || [])
     setLoading(false)
   }
 
-  if (loading) return <div className="page-loader"><div className="spinner" style={{ width: 32, height: 32 }}></div></div>
-
-  if (notFound) return (
-    <div style={{ minHeight: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem' }}>
-      <h2 style={{ color: 'var(--green)', fontSize: 24 }}>Profile not found</h2>
-      <Link to="/search"><button className="btn-primary">Back to search</button></Link>
-    </div>
-  )
-
-  const trustLabel = profile.trust_score >= 70 ? 'Highly Trusted' : profile.trust_score >= 40 ? 'Growing Trust' : 'Building Trust'
-  const trustColor = profile.trust_score >= 70 ? 'var(--green-mid)' : profile.trust_score >= 40 ? '#9A6700' : 'var(--muted)'
+  const medals = ['#F5A623', '#9CA3AF', '#CD7F32']
 
   return (
-    <div style={{ maxWidth: 720, margin: '0 auto', padding: '2.5rem 5%' }}>
-
-      {/* Hero card */}
-      <div className="card" style={{ borderTop: '4px solid var(--green-light)', marginBottom: '1.5rem', textAlign: 'center', padding: '2.5rem 2rem' }}>
-        <div style={{
-          width: 80, height: 80, borderRadius: '50%',
-          background: 'var(--green)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 32, fontFamily: 'Fraunces, serif', fontWeight: 700, color: 'white',
-          margin: '0 auto 1rem'
-        }}>
-          {profile.full_name?.charAt(0).toUpperCase()}
-        </div>
-        <h1 style={{ fontSize: 26, color: 'var(--green)', marginBottom: 6 }}>{profile.full_name}</h1>
-        {profile.skill && <span className="badge badge-green" style={{ marginBottom: 12 }}>{profile.skill}</span>}
-        <div style={{ display: 'flex', justifyContent: 'center', margin: '1.25rem 0' }}>
-          <TrustRing score={profile.trust_score || 0} size={110} />
-        </div>
-        <p style={{ fontSize: 14, fontWeight: 500, color: trustColor }}>{trustLabel}</p>
-
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border)' }}>
-          <div>
-            <p style={{ fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: 28, color: 'var(--green)' }}>{profile.trust_score || 0}</p>
-            <p style={{ fontSize: 12, color: 'var(--muted)' }}>Trust score</p>
-          </div>
-          <div>
-            <p style={{ fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: 28, color: 'var(--green)' }}>{profile.vouch_count || 0}</p>
-            <p style={{ fontSize: 12, color: 'var(--muted)' }}>Vouches received</p>
-          </div>
-        </div>
+    <div className="page" style={{ maxWidth: 640 }}>
+      <div className="page-header">
+        <h1>Leaderboard</h1>
+        <p>The most trusted people on Pruv — ranked by real community vouches.</p>
       </div>
 
-      {/* Vouches */}
-      <h2 style={{ fontSize: 18, color: 'var(--green)', marginBottom: '1rem' }}>
-        Vouches ({vouches.length})
-      </h2>
-
-      {vouches.length === 0 ? (
-        <div className="card" style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)' }}>
-          <p style={{ fontSize: 14 }}>No vouches yet.</p>
+      {loading ? (
+        <div className="loader"><div className="spin" style={{ width: 28, height: 28 }} /></div>
+      ) : leaders.length === 0 ? (
+        <div className="empty-state">
+          <p style={{ fontWeight: 600, marginBottom: 4, color: 'var(--dark)' }}>No one on the board yet</p>
+          <p>Be the first to get vouched and claim the top spot.</p>
         </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {vouches.map(v => (
-            <div key={v.id} className="card" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-              <Link to={`/profile/${v.voucher?.id}`} style={{ flexShrink: 0 }}>
-                <div style={{
-                  width: 44, height: 44, borderRadius: '50%',
-                  background: 'var(--green-pale)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 17, fontWeight: 700, color: 'var(--green)', cursor: 'pointer'
-                }}>
-                  {v.voucher?.full_name?.charAt(0).toUpperCase()}
-                </div>
-              </Link>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 3 }}>
-                  <Link to={`/profile/${v.voucher?.id}`} style={{ fontWeight: 500, fontSize: 14, color: 'var(--dark)' }}>{v.voucher?.full_name}</Link>
-                  <span className="badge badge-gray" style={{ fontSize: 11 }}>{v.voucher?.skill}</span>
-                  <span style={{ fontSize: 11, color: 'var(--muted)' }}>Score: {v.voucher?.trust_score}</span>
-                </div>
-                {v.message && (
-                  <p style={{ fontSize: 13, fontStyle: 'italic', color: 'var(--dark)', borderLeft: '2px solid var(--green-light)', paddingLeft: 10, lineHeight: 1.6 }}>
-                    "{v.message}"
-                  </p>
-                )}
-              </div>
-              <span className="badge badge-green" style={{ fontSize: 11, flexShrink: 0 }}>+{v.weight} pts</span>
+      ) : leaders.map((p, i) => (
+        <Link key={p.id} to={`/profile/${p.id}`}>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '1rem',
+            padding: '14px 16px', marginBottom: 8, borderRadius: 12,
+            background: i < 3 ? `${['#FEF3DC','#F3F4F6','#FDF3E7'][i]}` : 'var(--white)',
+            border: `1px solid ${i < 3 ? medals[i] + '55' : 'var(--border)'}`,
+            borderLeft: i < 3 ? `3px solid ${medals[i]}` : '1px solid var(--border)',
+            transition: 'transform 0.15s, box-shadow 0.15s',
+            cursor: 'pointer',
+          }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)' }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
+          >
+            {/* Rank */}
+            <div style={{ width: 28, textAlign: 'center', flexShrink: 0 }}>
+              {i < 3
+                ? <div style={{ width: 24, height: 24, borderRadius: '50%', background: medals[i], display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: 'white' }}>{i + 1}</span>
+                  </div>
+                : <span style={{ fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: 14, color: 'var(--muted)' }}>#{i + 1}</span>
+              }
             </div>
-          ))}
-        </div>
-      )}
 
-      <div style={{ marginTop: '2rem', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-        <Link to={`/vouch?to=${id}`}><button className="btn-primary">Vouch for {profile.full_name?.split(' ')[0]}</button></Link>
-        <Link to="/search"><button className="btn-secondary">Back to search</button></Link>
-      </div>
+            {/* Avatar */}
+            <Avatar profile={p} size={44} />
+
+            {/* Info */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontWeight: 600, fontSize: 15, marginBottom: 3, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{p.full_name}</p>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                {p.skill && <span className="badge badge-green" style={{ fontSize: 11 }}>{p.skill}</span>}
+                <span style={{ fontSize: 12, color: 'var(--muted)' }}>{p.vouch_count || 0} vouches</span>
+              </div>
+            </div>
+
+            {/* Score */}
+            <div style={{ textAlign: 'right', flexShrink: 0 }}>
+              <p style={{ fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: 24, color: 'var(--green)', lineHeight: 1 }}>{p.trust_score}</p>
+              <p style={{ fontSize: 11, color: 'var(--muted)', marginTop: 2 }}>/ 100</p>
+            </div>
+          </div>
+        </Link>
+      ))}
     </div>
   )
 }

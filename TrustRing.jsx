@@ -1,36 +1,56 @@
-export default function TrustRing({ score = 0, size = 80 }) {
-  const radius = (size - 10) / 2
-  const circumference = 2 * Math.PI * radius
-  const fill = Math.min(score, 100) / 100
-  const dashOffset = circumference * (1 - fill)
+import { createContext, useContext, useEffect, useState } from 'react'
+import { supabase } from '../supabase'
 
-  const color = score >= 70 ? '#2ECC8A' : score >= 40 ? '#F5A623' : '#E53E3E'
-  const label = score >= 70 ? 'High Trust' : score >= 40 ? 'Growing' : 'New'
+const AuthContext = createContext({})
+
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null)
+  const [profile, setProfile] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null)
+      if (session?.user) fetchProfile(session.user.id)
+      else setLoading(false)
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+      if (session?.user) fetchProfile(session.user.id)
+      else { setProfile(null); setLoading(false) }
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
+  async function fetchProfile(userId) {
+    const { data } = await supabase.from('profiles').select('*').eq('id', userId).single()
+    setProfile(data)
+    setLoading(false)
+  }
+
+  async function signUp(email, password, fullName, skill) {
+    const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin } })
+    if (error) throw error
+    if (data.user) {
+      await supabase.from('profiles').insert({ id: data.user.id, full_name: fullName, email, skill, trust_score: 0, vouch_count: 0 })
+    }
+    return data
+  }
+
+  async function signIn(email, password) {
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) throw error
+  }
+
+  async function signOut() {
+    await supabase.auth.signOut()
+  }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-      <div style={{ position: 'relative', width: size, height: size }}>
-        <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-          <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="var(--border)" strokeWidth="6"/>
-          <circle
-            cx={size/2} cy={size/2} r={radius}
-            fill="none" stroke={color} strokeWidth="6"
-            strokeDasharray={circumference}
-            strokeDashoffset={dashOffset}
-            strokeLinecap="round"
-            style={{ transition: 'stroke-dashoffset 0.8s ease' }}
-          />
-        </svg>
-        <div style={{
-          position: 'absolute', inset: 0,
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
-        }}>
-          <span style={{ fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: size * 0.22, color: 'var(--dark)', lineHeight: 1 }}>
-            {score}
-          </span>
-        </div>
-      </div>
-      <span style={{ fontSize: 11, fontWeight: 500, color, letterSpacing: '0.04em' }}>{label}</span>
-    </div>
+    <AuthContext.Provider value={{ user, profile, loading, signUp, signIn, signOut, fetchProfile }}>
+      {children}
+    </AuthContext.Provider>
   )
 }
+
+export const useAuth = () => useContext(AuthContext)

@@ -25,12 +25,25 @@ export default function Navbar() {
 
   async function fetchCounts() {
     if (!user) return
-    const [{ count: m }, { count: n }] = await Promise.all([
+    const [{ count: m }, profileRes] = await Promise.all([
       supabase.from('messages').select('*', { count: 'exact', head: true }).eq('receiver_id', user.id).eq('read', false),
-      supabase.from('vouches').select('*', { count: 'exact', head: true }).eq('vouchee_id', user.id).gte('created_at', new Date(Date.now() - 7 * 86400000).toISOString())
+      supabase.from('profiles').select('notifs_last_read').eq('id', user.id).single()
     ])
     setUnreadMsgs(m || 0)
-    setUnreadNotifs(n || 0)
+    // Count vouches newer than last read time
+    const lastRead = profileRes.data?.notifs_last_read
+    if (lastRead) {
+      const { count: n } = await supabase.from('vouches')
+        .select('*', { count: 'exact', head: true })
+        .eq('vouchee_id', user.id)
+        .gt('created_at', lastRead)
+      setUnreadNotifs(n || 0)
+    } else {
+      const { count: n } = await supabase.from('vouches')
+        .select('*', { count: 'exact', head: true })
+        .eq('vouchee_id', user.id)
+      setUnreadNotifs(n || 0)
+    }
   }
 
   async function handleSignOut() { await signOut(); navigate('/') }

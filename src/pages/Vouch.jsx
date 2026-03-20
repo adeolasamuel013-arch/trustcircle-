@@ -56,6 +56,26 @@ export default function Vouch() {
     })
     if (vouchError) { setError('Something went wrong. Please try again.'); setSubmitting(false); return }
     await supabase.from('profiles').update({ trust_score: newScore, vouch_count: newCount }).eq('id', selected.id)
+
+    // Send email notification
+    try {
+      await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/notify-vouch`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({
+          record: {
+            voucher_id: user.id,
+            vouchee_id: selected.id,
+            message: message.trim() || null,
+            weight
+          }
+        })
+      })
+    } catch (e) { console.log('Email notification failed silently', e) }
+
     setSuccess(`You vouched for ${selected.full_name}! Their trust score increased by ${weight} points to ${newScore}.`)
     setSelected(null); setSearch(''); setResults([]); setMessage('')
     setSubmitting(false)
@@ -65,10 +85,10 @@ export default function Vouch() {
 
   return (
     <div className="page-sm" style={{ padding: '2rem 1rem' }}>
-      <div className="page-header"><h1>Vouch for someone</h1>
-      <p style={{ color: 'var(--muted)', fontSize: 15, lineHeight: 1.7, marginBottom: 0 }}>
-        Search for someone you trust personally. Your vouch increases their trust score and reflects on your own reputation.
-      </p>
+      <div className="page-header">
+        <h1>Vouch for someone</h1>
+        <p>Search for someone you trust personally. Your vouch increases their trust score and reflects on your own reputation.</p>
+      </div>
 
       <div style={{ background: 'var(--green-pale)', border: '1px solid #B8E8D4', borderRadius: 12, padding: '1rem', marginBottom: '1.5rem' }}>
         <p style={{ fontSize: 13, color: 'var(--green-mid)', lineHeight: 1.6 }}>

@@ -108,6 +108,24 @@ export default function Messages() {
     if (saved) {
       setMessages(m => m.map(x => x.id === temp.id ? saved : x))
       setConversations(c => c.map(x => x.person.id === activeChat ? { ...x, lastMessage: saved } : x))
+
+      // Send email notification
+      try {
+        await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/notify-message`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify({
+            record: {
+              sender_id: user.id,
+              receiver_id: activeChat,
+              content
+            }
+          })
+        })
+      } catch (e) { console.log('Email notification failed silently', e) }
     }
     setSending(false)
   }

@@ -4,8 +4,8 @@ export default function HowItWorks() {
   return (
     <div className="page">
       <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-        <h1 style={{ fontSize: 'clamp(1.8rem, 5vw, 3rem)', color: 'var(--green)', marginBottom: '1rem' }}>How Prov works</h1>
-        <p style={{ color: 'var(--muted)', fontSize: 16, maxWidth: 480, margin: '0 auto', lineHeight: 1.7 }}>Prov digitises the way Nigerians already find trusted people — through referrals — and uses AI to scale it to millions.</p>
+        <h1 style={{ fontSize: 'clamp(1.8rem, 5vw, 3rem)', color: 'var(--green)', marginBottom: '1rem' }}>How Pruv works</h1>
+        <p style={{ color: 'var(--muted)', fontSize: 16, maxWidth: 480, margin: '0 auto', lineHeight: 1.7 }}>Pruv digitises the way Nigerians already find trusted people — through referrals — and uses AI to scale it to millions.</p>
       </div>
 
       {[
@@ -46,7 +46,7 @@ export default function HowItWorks() {
       {/* FAQ */}
       <h2 style={{ fontSize: 22, color: 'var(--green)', marginBottom: '1.25rem' }}>Frequently asked questions</h2>
       {[
-        { q: 'Is Prov free?', a: 'Yes — joining, vouching for people and searching for services is completely free. Always.' },
+        { q: 'Is Pruv free?', a: 'Yes — joining, vouching for people and searching for services is completely free. Always.' },
         { q: 'How is the trust score calculated?', a: 'Each vouch adds points based on the voucher\'s own score. A vouch from someone with 80 points adds more than someone at 10 — just like real life.' },
         { q: 'What stops people vouching for strangers?', a: 'Your own reputation. Every vouch you give is visible on your profile. Vouching for unreliable people reflects badly on you.' },
         { q: 'How do I grow my trust score fast?', a: 'Share your profile link with every client after every job and ask them to vouch for you. The more real vouches you collect, the higher your score grows.' },
@@ -62,7 +62,7 @@ export default function HowItWorks() {
 
       <div style={{ background: 'var(--green)', borderRadius: 16, padding: '2.5rem', textAlign: 'center', marginTop: '2rem' }}>
         <h2 style={{ color: 'white', marginBottom: '0.75rem', fontSize: 22 }}>Ready to build your trust?</h2>
-        <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '1.5rem', fontSize: 15 }}>Join Prov free today.</p>
+        <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '1.5rem', fontSize: 15 }}>Join Pruv free today.</p>
         <Link to="/signup"><button className="btn btn-amber">Get started free</button></Link>
       </div>
     </div>

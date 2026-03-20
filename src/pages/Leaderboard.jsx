@@ -1,58 +1,82 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../supabase'
-
-const SKILLS = ['All','Mechanic','Electrician','Plumber','Lawyer','Doctor','Accountant','Graphic Designer','Web Developer','Chef / Caterer','Tailor / Fashion','Hair Stylist','Photographer','Driver','Carpenter','Painter','Real Estate Agent','Teacher / Tutor','Other']
+import Avatar from '../components/Avatar'
 
 export default function Leaderboard() {
   const [leaders, setLeaders] = useState([])
-  const [skill, setSkill] = useState('All')
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => { load() }, [skill])
+  useEffect(() => { load() }, [])
 
   async function load() {
     setLoading(true)
-    let q = supabase.from('profiles').select('id,full_name,skill,trust_score,vouch_count,avatar_url').order('trust_score', { ascending: false }).gt('trust_score', 0).limit(50)
-    if (skill !== 'All') q = q.eq('skill', skill)
-    const { data } = await q
-    setLeaders(data || []); setLoading(false)
+    const { data } = await supabase
+      .from('profiles')
+      .select('id,full_name,skill,trust_score,vouch_count,avatar_url')
+      .order('trust_score', { ascending: false })
+      .gt('trust_score', 0)
+      .limit(50)
+    setLeaders(data || [])
+    setLoading(false)
   }
 
-  return (
-    <div className="page">
-      <h1 style={{ fontSize: 26, color: 'var(--green)', marginBottom: 8 }}>Most Trusted in Nigeria</h1>
-      <p style={{ color: 'var(--muted)', fontSize: 14, marginBottom: '1.5rem' }}>Ranked by real vouches from real people.</p>
+  const medals = ['#F5A623', '#9CA3AF', '#CD7F32']
 
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: '1.5rem' }}>
-        {SKILLS.map(s => (
-          <button key={s} onClick={() => setSkill(s)} style={{ padding: '7px 14px', fontSize: 13, borderRadius: 999, background: skill === s ? 'var(--green)' : 'white', color: skill === s ? 'white' : 'var(--dark)', border: `1px solid ${skill === s ? 'var(--green)' : 'var(--border)'}`, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>{s}</button>
-        ))}
+  return (
+    <div className="page" style={{ maxWidth: 640 }}>
+      <div className="page-header">
+        <h1>Leaderboard</h1>
+        <p>The most trusted people on Pruv — ranked by real community vouches.</p>
       </div>
 
       {loading ? (
         <div className="loader"><div className="spin" style={{ width: 28, height: 28 }} /></div>
       ) : leaders.length === 0 ? (
-        <div className="card" style={{ textAlign: 'center', padding: '3rem', color: 'var(--muted)' }}><p>No results yet for this category.</p></div>
+        <div className="empty-state">
+          <p style={{ fontWeight: 600, marginBottom: 4, color: 'var(--dark)' }}>No one on the board yet</p>
+          <p>Be the first to get vouched and claim the top spot.</p>
+        </div>
       ) : leaders.map((p, i) => (
         <Link key={p.id} to={`/profile/${p.id}`}>
-          <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.75rem', padding: '1rem', borderLeft: i < 3 ? `4px solid ${['#F5A623','#9CA3AF','#CD7F32'][i]}` : '1px solid var(--border)' }}>
-            <div style={{ width: 32, textAlign: 'center', flexShrink: 0 }}>
-              {i < 3 ? <span style={{ fontSize: 22 }}>{['🥇','🥈','🥉'][i]}</span> : <span style={{ fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: 15, color: 'var(--muted)' }}>#{i+1}</span>}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '1rem',
+            padding: '14px 16px', marginBottom: 8, borderRadius: 12,
+            background: i < 3 ? `${['#FEF3DC','#F3F4F6','#FDF3E7'][i]}` : 'var(--white)',
+            border: `1px solid ${i < 3 ? medals[i] + '55' : 'var(--border)'}`,
+            borderLeft: i < 3 ? `3px solid ${medals[i]}` : '1px solid var(--border)',
+            transition: 'transform 0.15s, box-shadow 0.15s',
+            cursor: 'pointer',
+          }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)' }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
+          >
+            {/* Rank */}
+            <div style={{ width: 28, textAlign: 'center', flexShrink: 0 }}>
+              {i < 3
+                ? <div style={{ width: 24, height: 24, borderRadius: '50%', background: medals[i], display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: 'white' }}>{i + 1}</span>
+                  </div>
+                : <span style={{ fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: 14, color: 'var(--muted)' }}>#{i + 1}</span>
+              }
             </div>
-            <div style={{ width: 44, height: 44, borderRadius: '50%', overflow: 'hidden', background: 'var(--green-pale)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700, color: 'var(--green)', flexShrink: 0 }}>
-              {p.avatar_url ? <img src={p.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : p.full_name?.charAt(0).toUpperCase()}
-            </div>
+
+            {/* Avatar */}
+            <Avatar profile={p} size={44} />
+
+            {/* Info */}
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontWeight: 500, fontSize: 15 }}>{p.full_name}</p>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 3 }}>
-                <span className="badge badge-green" style={{ fontSize: 11 }}>{p.skill}</span>
+              <p style={{ fontWeight: 600, fontSize: 15, marginBottom: 3, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{p.full_name}</p>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                {p.skill && <span className="badge badge-green" style={{ fontSize: 11 }}>{p.skill}</span>}
                 <span style={{ fontSize: 12, color: 'var(--muted)' }}>{p.vouch_count || 0} vouches</span>
               </div>
             </div>
+
+            {/* Score */}
             <div style={{ textAlign: 'right', flexShrink: 0 }}>
-              <p style={{ fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: 22, color: 'var(--green)' }}>{p.trust_score}</p>
-              <p style={{ fontSize: 11, color: 'var(--muted)' }}>/ 100</p>
+              <p style={{ fontFamily: 'Fraunces, serif', fontWeight: 700, fontSize: 24, color: 'var(--green)', lineHeight: 1 }}>{p.trust_score}</p>
+              <p style={{ fontSize: 11, color: 'var(--muted)', marginTop: 2 }}>/ 100</p>
             </div>
           </div>
         </Link>

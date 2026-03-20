@@ -98,7 +98,7 @@ export default function Navbar() {
       <nav className="nav">
         <Link to={user ? '/dashboard' : '/'} className="nav-brand">
           <div className="nav-brand-dot" />
-          Pruv
+          Prov
         </Link>
 
         {/* Desktop links */}
@@ -146,7 +146,7 @@ export default function Navbar() {
           <div className="drawer-overlay" onClick={() => setMenuOpen(false)} />
           <div className="drawer">
             <div className="drawer-head">
-              <span style={{ fontFamily: 'Fraunces, serif', fontSize: 18, fontWeight: 900, color: 'var(--green)' }}>Pruv</span>
+              <span style={{ fontFamily: 'Fraunces, serif', fontSize: 18, fontWeight: 900, color: 'var(--green)' }}>Prov</span>
               <button onClick={() => setMenuOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: 20, lineHeight: 1 }}>✕</button>
             </div>
             {user && (

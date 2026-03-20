@@ -56,7 +56,7 @@ export default function Signup() {
       <div style={{ width: '100%', maxWidth: 440 }}>
 
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <h1 style={{ fontSize: 26, color: 'var(--green)', marginBottom: 6 }}>Join Pruv</h1>
+          <h1 style={{ fontSize: 26, color: 'var(--green)', marginBottom: 6 }}>Join Prov</h1>
           <p style={{ color: 'var(--muted)', fontSize: 15 }}>Free to join. Always.</p>
         </div>
 

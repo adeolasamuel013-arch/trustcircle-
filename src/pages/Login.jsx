@@ -32,7 +32,7 @@ export default function Login() {
             </svg>
           </div>
           <h1 style={{ fontSize: 26, color: 'var(--green)', marginBottom: 6 }}>Welcome back</h1>
-          <p style={{ color: 'var(--muted)', fontSize: 15 }}>Sign in to your Pruv account</p>
+          <p style={{ color: 'var(--muted)', fontSize: 15 }}>Sign in to your Prov account</p>
         </div>
 
         <div className="card">

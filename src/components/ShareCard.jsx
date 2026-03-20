@@ -15,11 +15,11 @@ export default function ShareCard({ profileId, name }) {
         <button className="btn btn-outline" onClick={copy} style={{ flexShrink: 0, padding: '8px 14px', fontSize: 13 }}>{copied ? 'Copied!' : 'Copy'}</button>
       </div>
       <div style={{ display: 'flex', gap: 8 }}>
-        <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`Check out my Pruv profile: ${url}`)}`, '_blank')}
+        <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`Check out my Prov profile: ${url}`)}`, '_blank')}
           style={{ flex: 1, padding: '10px', fontSize: 13, borderRadius: 10, background: '#25D366', color: 'white', border: 'none', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', fontWeight: 500 }}>
           WhatsApp
         </button>
-        <button onClick={() => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(`My Pruv profile: ${url}`)}`, '_blank')}
+        <button onClick={() => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(`My Prov profile: ${url}`)}`, '_blank')}
           style={{ flex: 1, padding: '10px', fontSize: 13, borderRadius: 10, background: '#000', color: 'white', border: 'none', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', fontWeight: 500 }}>
           Share on X
         </button>

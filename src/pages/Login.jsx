@@ -25,7 +25,7 @@ export default function Login() {
       <div style={{ width: '100%', maxWidth: 420 }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <h1 style={{ fontSize: 30, color: 'var(--green)', marginBottom: 8 }}>Welcome back</h1>
-          <p style={{ color: 'var(--muted)', fontSize: 15 }}>Sign in to your TrustCircle account</p>
+          <p style={{ color: 'var(--muted)', fontSize: 15 }}>Sign in to your Prov account</p>
         </div>
         <div className="card" style={{ padding: '2rem' }}>
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>

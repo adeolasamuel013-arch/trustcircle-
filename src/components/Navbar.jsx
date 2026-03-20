@@ -2,14 +2,13 @@ import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../supabase'
-import Icon from './Icon'
 
 export default function Navbar() {
   const { user, profile, signOut } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
-  const [unreadMessages, setUnreadMessages] = useState(0)
+  const [unreadMsgs, setUnreadMsgs] = useState(0)
   const [unreadNotifs, setUnreadNotifs] = useState(0)
 
   useEffect(() => { setMenuOpen(false) }, [location])
@@ -17,131 +16,73 @@ export default function Navbar() {
   useEffect(() => {
     if (!user) return
     fetchCounts()
-    const channel = supabase.channel('navbar-counts')
+    const ch = supabase.channel('nav')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `receiver_id=eq.${user.id}` }, fetchCounts)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'vouches', filter: `vouchee_id=eq.${user.id}` }, fetchCounts)
       .subscribe()
-    return () => supabase.removeChannel(channel)
+    return () => supabase.removeChannel(ch)
   }, [user])
 
   async function fetchCounts() {
     if (!user) return
-    const [{ count: msgs }, { count: notifs }] = await Promise.all([
+    const [{ count: m }, { count: n }] = await Promise.all([
       supabase.from('messages').select('*', { count: 'exact', head: true }).eq('receiver_id', user.id).eq('read', false),
       supabase.from('vouches').select('*', { count: 'exact', head: true }).eq('vouchee_id', user.id).gte('created_at', new Date(Date.now() - 7 * 86400000).toISOString())
     ])
-    setUnreadMessages(msgs || 0)
-    setUnreadNotifs(notifs || 0)
+    setUnreadMsgs(m || 0)
+    setUnreadNotifs(n || 0)
   }
 
-  async function handleSignOut() {
-    await signOut()
-    navigate('/')
-  }
+  async function handleSignOut() { await signOut(); navigate('/') }
 
   const isAdmin = user?.email === 'adeolasamuel013@gmail.com'
-  const active = (path) => location.pathname === path
+  const isActive = (p) => location.pathname === p
+
+  const navLinks = [
+    { to: '/search', label: 'Search' },
+    { to: '/leaderboard', label: 'Leaderboard' },
+    { to: '/posts', label: 'Showcase' },
+    { to: '/vouch', label: 'Vouch', auth: true },
+    ...(isAdmin ? [{ to: '/admin', label: 'Admin' }] : []),
+  ]
+
+  const Badge = ({ count }) => count > 0 ? (
+    <span style={{ position: 'absolute', top: -4, right: -4, background: '#DC2626', color: 'white', fontSize: 9, fontWeight: 700, minWidth: 15, height: 15, borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 3px', border: '2px solid var(--cream)' }}>
+      {count > 9 ? '9+' : count}
+    </span>
+  ) : null
 
   return (
     <>
       <style>{`
-        .nav-root {
-          position: sticky; top: 0; z-index: 50; height: 60px;
-          background: var(--white); border-bottom: 1px solid var(--border);
-          display: flex; align-items: center; justify-content: space-between;
-          padding: 0 1.5rem; gap: 2rem;
-        }
-        .nav-brand {
-          font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 900;
-          color: var(--forest); display: flex; align-items: center; gap: 8px;
-          text-decoration: none; flex-shrink: 0; letter-spacing: -0.02em;
-        }
-        .nav-brand-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--terracotta); flex-shrink: 0; }
-        .nav-links { display: flex; align-items: center; gap: 1.75rem; }
-        .nav-link {
-          font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600;
-          letter-spacing: 0.03em; color: var(--mist); text-decoration: none;
-          transition: color 0.15s; white-space: nowrap;
-        }
-        .nav-link:hover, .nav-link.active { color: var(--forest); }
-        .nav-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-        .nav-icon-btn {
-          position: relative; width: 36px; height: 36px; border-radius: 7px;
-          background: var(--sand); border: 1px solid var(--border); cursor: pointer;
-          display: flex; align-items: center; justify-content: center; transition: background 0.15s;
-          color: var(--mist);
-        }
-        .nav-icon-btn:hover { background: var(--parchment); color: var(--forest); }
-        .nav-badge {
-          position: absolute; top: -4px; right: -4px;
-          background: var(--terracotta); color: white; font-size: 9px;
-          font-family: 'Syne', sans-serif; font-weight: 700;
-          min-width: 16px; height: 16px; border-radius: 999px;
-          display: flex; align-items: center; justify-content: center;
-          padding: 0 4px; border: 2px solid var(--white);
-        }
-        .nav-avatar {
-          width: 32px; height: 32px; border-radius: 7px; overflow: hidden;
-          border: 1.5px solid var(--border); cursor: pointer;
-          background: var(--forest); display: flex; align-items: center;
-          justify-content: center; flex-shrink: 0;
-          font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; color: white;
-        }
-        .nav-join-btn {
-          font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700;
-          letter-spacing: 0.04em; background: var(--forest); color: white;
-          border: none; padding: 9px 18px; border-radius: 6px; cursor: pointer;
-          transition: all 0.18s; white-space: nowrap;
-        }
-        .nav-join-btn:hover { background: var(--moss); }
-        .nav-login-link {
-          font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600;
-          color: var(--mist); text-decoration: none; white-space: nowrap;
-          transition: color 0.15s;
-        }
-        .nav-login-link:hover { color: var(--forest); }
-        .nav-menu-btn {
-          width: 36px; height: 36px; border-radius: 7px; border: 1px solid var(--border);
-          background: var(--sand); cursor: pointer; display: flex; align-items: center;
-          justify-content: center; color: var(--forest);
-        }
-
-        /* Mobile drawer */
-        .nav-drawer-overlay {
-          position: fixed; inset: 0; background: rgba(14,12,10,0.5);
-          z-index: 98; backdrop-filter: blur(4px);
-          animation: fadeIn 0.2s ease;
-        }
-        .nav-drawer {
-          position: fixed; top: 0; right: 0; bottom: 0; width: 280px;
-          background: var(--white); z-index: 99; box-shadow: -8px 0 40px rgba(0,0,0,0.15);
-          display: flex; flex-direction: column;
-          animation: slideIn 0.25s cubic-bezier(0.4,0,0.2,1);
-        }
-        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-        .drawer-header {
-          display: flex; align-items: center; justify-content: space-between;
-          padding: 1rem 1.25rem; border-bottom: 1px solid var(--border);
-        }
-        .drawer-links { flex: 1; overflow-y: auto; padding: 1rem 0; }
-        .drawer-link {
-          display: flex; align-items: center; gap: 12px; padding: 12px 1.25rem;
-          font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600;
-          color: var(--mist); transition: all 0.15s; text-decoration: none;
-          border-left: 2px solid transparent;
-        }
-        .drawer-link:hover, .drawer-link.active {
-          color: var(--forest); background: var(--sand);
-          border-left-color: var(--forest);
-        }
-        .drawer-footer { padding: 1rem 1.25rem; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
-
-        @media(max-width: 768px) { .nav-links { display: none; } }
-        @media(min-width: 769px) { .nav-menu-btn { display: none; } }
+        .nav { position: sticky; top: 0; z-index: 50; height: 62px; background: white; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 1.5rem; gap: 0; }
+        .nav-brand { font-family: Fraunces, serif; font-size: 20px; font-weight: 900; color: var(--green); text-decoration: none; margin-right: auto; display: flex; align-items: center; gap: 8px; }
+        .nav-brand-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green-light); }
+        .nav-links { display: flex; align-items: center; gap: 4px; margin-right: 1.25rem; }
+        .nav-link { font-size: 14px; font-weight: 500; color: var(--muted); padding: 7px 12px; border-radius: 8px; transition: all 0.15s; white-space: nowrap; text-decoration: none; }
+        .nav-link:hover { color: var(--green); background: var(--green-pale); }
+        .nav-link.active { color: var(--green); font-weight: 600; background: var(--green-pale); }
+        .nav-right { display: flex; align-items: center; gap: 8px; }
+        .nav-icon { position: relative; width: 36px; height: 36px; border-radius: 9px; background: var(--cream); border: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--muted); transition: all 0.15s; text-decoration: none; }
+        .nav-icon:hover { background: var(--green-pale); color: var(--green); border-color: var(--green-light); }
+        .nav-avatar { width: 34px; height: 34px; border-radius: 9px; overflow: hidden; background: var(--green); display: flex; align-items: center; justify-content: center; font-family: Fraunces, serif; font-size: 14px; font-weight: 700; color: white; cursor: pointer; border: 1.5px solid var(--border); text-decoration: none; flex-shrink: 0; }
+        .nav-signout { font-size: 13px; font-weight: 500; background: none; border: 1px solid var(--border); color: var(--muted); padding: 7px 14px; border-radius: 8px; cursor: pointer; font-family: DM Sans, sans-serif; transition: all 0.15s; white-space: nowrap; }
+        .nav-signout:hover { color: var(--green); border-color: var(--green); }
+        .hamburger { width: 36px; height: 36px; border-radius: 9px; background: var(--cream); border: 1px solid var(--border); cursor: pointer; display: none; align-items: center; justify-content: center; flex-direction: column; gap: 5px; }
+        .ham-line { width: 16px; height: 1.5px; background: var(--dark); border-radius: 99; }
+        .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 98; animation: fadeIn 0.2s ease; }
+        .drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 272px; background: white; z-index: 99; display: flex; flex-direction: column; box-shadow: -4px 0 30px rgba(0,0,0,0.1); animation: slideRight 0.25s ease; }
+        @keyframes slideRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .drawer-head { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); }
+        .drawer-body { flex: 1; overflow-y: auto; padding: 0.75rem 0; }
+        .drawer-item { display: flex; align-items: center; gap: 12px; padding: 11px 1.25rem; font-size: 14px; font-weight: 500; color: var(--muted); text-decoration: none; transition: all 0.15s; border-left: 2.5px solid transparent; }
+        .drawer-item:hover, .drawer-item.active { color: var(--green); background: var(--green-pale); border-left-color: var(--green); }
+        .drawer-foot { padding: 1rem 1.25rem; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
+        @media(max-width: 720px) { .nav-links { display: none; } .hamburger { display: flex; } }
       `}</style>
 
-      <nav className="nav-root">
+      <nav className="nav">
         <Link to={user ? '/dashboard' : '/'} className="nav-brand">
           <div className="nav-brand-dot" />
           Prov
@@ -149,51 +90,39 @@ export default function Navbar() {
 
         {/* Desktop links */}
         <div className="nav-links">
-          <Link to="/search" className={`nav-link ${active('/search') ? 'active' : ''}`}>Search</Link>
-          <Link to="/leaderboard" className={`nav-link ${active('/leaderboard') ? 'active' : ''}`}>Leaderboard</Link>
-          <Link to="/posts" className={`nav-link ${active('/posts') ? 'active' : ''}`}>Showcase</Link>
-          <Link to="/vouch" className={`nav-link ${active('/vouch') ? 'active' : ''}`}>Vouch</Link>
-          {isAdmin && <Link to="/admin" className={`nav-link ${active('/admin') ? 'active' : ''}`}>Admin</Link>}
+          {navLinks.filter(l => !l.auth || user).map(({ to, label }) => (
+            <Link key={to} to={to} className={`nav-link ${isActive(to) ? 'active' : ''}`}>{label}</Link>
+          ))}
         </div>
 
         {/* Desktop right */}
         <div className="nav-right">
           {user ? (
             <>
-              <Link to="/messages">
-                <div className="nav-icon-btn">
-                  <Icon name="message" size={16} color="currentColor" />
-                  {unreadMessages > 0 && <div className="nav-badge">{unreadMessages > 9 ? '9+' : unreadMessages}</div>}
-                </div>
+              <Link to="/messages" className="nav-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <Badge count={unreadMsgs} />
               </Link>
-              <Link to="/notifications">
-                <div className="nav-icon-btn">
-                  <Icon name="bell" size={16} color="currentColor" />
-                  {unreadNotifs > 0 && <div className="nav-badge">{unreadNotifs > 9 ? '9+' : unreadNotifs}</div>}
-                </div>
+              <Link to="/notifications" className="nav-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                <Badge count={unreadNotifs} />
               </Link>
-              <Link to="/dashboard">
-                <div className="nav-avatar">
-                  {profile?.avatar_url
-                    ? <img src={profile.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    : profile?.full_name?.charAt(0).toUpperCase() || 'U'
-                  }
-                </div>
+              <Link to="/dashboard" className="nav-avatar">
+                {profile?.avatar_url
+                  ? <img src={profile.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : profile?.full_name?.charAt(0).toUpperCase() || 'U'
+                }
               </Link>
-              <button onClick={handleSignOut} style={{ fontFamily: 'Syne, sans-serif', fontSize: 12, fontWeight: 600, background: 'none', border: '1px solid var(--border)', color: 'var(--mist)', padding: '7px 14px', borderRadius: 6, cursor: 'pointer', transition: 'all 0.15s', letterSpacing: '0.03em' }}
-                onMouseEnter={e => { e.currentTarget.style.color = 'var(--forest)'; e.currentTarget.style.borderColor = 'var(--forest)' }}
-                onMouseLeave={e => { e.currentTarget.style.color = 'var(--mist)'; e.currentTarget.style.borderColor = 'var(--border)' }}>
-                Sign out
-              </button>
+              <button className="nav-signout" onClick={handleSignOut}>Sign out</button>
             </>
           ) : (
             <>
-              <Link to="/login" className="nav-login-link">Sign in</Link>
-              <Link to="/signup"><button className="nav-join-btn">Join free</button></Link>
+              <Link to="/login" style={{ fontSize: 14, fontWeight: 500, color: 'var(--muted)', padding: '7px 12px', borderRadius: 8, transition: 'color 0.15s' }}>Sign in</Link>
+              <Link to="/signup"><button className="btn btn-green btn-sm">Join free</button></Link>
             </>
           )}
-          <button className="nav-menu-btn" onClick={() => setMenuOpen(true)}>
-            <Icon name="menu" size={18} color="currentColor" />
+          <button className="hamburger" onClick={() => setMenuOpen(true)}>
+            <div className="ham-line" /><div className="ham-line" /><div className="ham-line" />
           </button>
         </div>
       </nav>
@@ -201,31 +130,24 @@ export default function Navbar() {
       {/* Mobile drawer */}
       {menuOpen && (
         <>
-          <div className="nav-drawer-overlay" onClick={() => setMenuOpen(false)} />
-          <div className="nav-drawer">
-            <div className="drawer-header">
-              <span style={{ fontFamily: 'Playfair Display, serif', fontSize: 16, fontWeight: 900, color: 'var(--forest)' }}>Prov</span>
-              <button onClick={() => setMenuOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--mist)', display: 'flex' }}>
-                <Icon name="x" size={20} color="currentColor" />
-              </button>
+          <div className="drawer-overlay" onClick={() => setMenuOpen(false)} />
+          <div className="drawer">
+            <div className="drawer-head">
+              <span style={{ fontFamily: 'Fraunces, serif', fontSize: 18, fontWeight: 900, color: 'var(--green)' }}>Prov</span>
+              <button onClick={() => setMenuOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: 20, lineHeight: 1 }}>✕</button>
             </div>
-
             {user && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '1rem 1.25rem', borderBottom: '1px solid var(--border)', background: 'var(--sand)' }}>
-                <div style={{ width: 40, height: 40, borderRadius: 8, overflow: 'hidden', background: 'var(--forest)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontFamily: 'Playfair Display, serif', fontWeight: 700, fontSize: 16, color: 'white' }}>
-                  {profile?.avatar_url
-                    ? <img src={profile.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    : profile?.full_name?.charAt(0).toUpperCase() || 'U'
-                  }
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '1rem 1.25rem', background: 'var(--green-pale)', borderBottom: '1px solid var(--border)' }}>
+                <div style={{ width: 40, height: 40, borderRadius: 10, overflow: 'hidden', background: 'var(--green)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Fraunces, serif', fontSize: 16, fontWeight: 700, color: 'white', flexShrink: 0 }}>
+                  {profile?.avatar_url ? <img src={profile.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : profile?.full_name?.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <div style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 14, color: 'var(--forest)' }}>{profile?.full_name}</div>
-                  <div style={{ fontSize: 12, color: 'var(--mist)' }}>Score: {profile?.trust_score || 0}</div>
+                  <p style={{ fontWeight: 600, fontSize: 14, color: 'var(--green)' }}>{profile?.full_name}</p>
+                  <p style={{ fontSize: 12, color: 'var(--green-mid)' }}>Score: {profile?.trust_score || 0}</p>
                 </div>
               </div>
             )}
-
-            <div className="drawer-links">
+            <div className="drawer-body">
               {[
                 { to: '/', label: 'Home' },
                 { to: '/dashboard', label: 'My Dashboard', auth: true },
@@ -233,34 +155,28 @@ export default function Navbar() {
                 { to: '/vouch', label: 'Vouch for Someone', auth: true },
                 { to: '/leaderboard', label: 'Leaderboard' },
                 { to: '/posts', label: 'Work Showcase' },
-                { to: '/messages', label: 'Messages', badge: unreadMessages, auth: true },
-                { to: '/notifications', label: 'Notifications', badge: unreadNotifs, auth: true },
+                { to: '/messages', label: 'Messages', auth: true, badge: unreadMsgs },
+                { to: '/notifications', label: 'Notifications', auth: true, badge: unreadNotifs },
                 { to: '/edit-profile', label: 'Edit Profile', auth: true },
                 { to: '/how-it-works', label: 'How It Works' },
-                { to: '/admin', label: 'Admin Dashboard', admin: true },
-              ].filter(l => {
-                if (l.auth && !user) return false
-                if (l.admin && !isAdmin) return false
-                return true
-              }).map(({ to, label, badge }) => (
-                <Link key={to} to={to} className={`drawer-link ${active(to) ? 'active' : ''}`}>
+                ...(isAdmin ? [{ to: '/admin', label: 'Admin' }] : []),
+              ].filter(l => !l.auth || user).map(({ to, label, badge }) => (
+                <Link key={to} to={to} className={`drawer-item ${isActive(to) ? 'active' : ''}`}>
                   {label}
                   {badge > 0 && (
-                    <span style={{ marginLeft: 'auto', background: 'var(--terracotta)', color: 'white', fontSize: 11, fontFamily: 'Syne, sans-serif', fontWeight: 700, padding: '2px 7px', borderRadius: 999 }}>{badge}</span>
+                    <span style={{ marginLeft: 'auto', background: '#DC2626', color: 'white', fontSize: 11, fontWeight: 700, padding: '2px 7px', borderRadius: 999 }}>{badge}</span>
                   )}
                 </Link>
               ))}
             </div>
-
-            <div className="drawer-footer">
-              {user ? (
-                <button onClick={handleSignOut} className="btn btn-outline btn-full" style={{ fontSize: 13 }}>Sign out</button>
-              ) : (
-                <>
-                  <Link to="/signup"><button className="btn btn-green btn-full">Join free</button></Link>
-                  <Link to="/login"><button className="btn btn-outline btn-full" style={{ fontSize: 13 }}>Sign in</button></Link>
-                </>
-              )}
+            <div className="drawer-foot">
+              {user
+                ? <button onClick={handleSignOut} className="btn btn-ghost btn-full">Sign out</button>
+                : <>
+                    <Link to="/signup"><button className="btn btn-green btn-full">Join free</button></Link>
+                    <Link to="/login"><button className="btn btn-ghost btn-full">Sign in</button></Link>
+                  </>
+              }
             </div>
           </div>
         </>

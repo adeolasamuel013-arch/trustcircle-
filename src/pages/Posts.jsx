@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../supabase'
 import { useAuth } from '../context/AuthContext'
 import Avatar from '../components/Avatar'
-import Icon from '../components/Icon'
 
 export default function Posts() {
   const { user, profile } = useAuth()
@@ -100,7 +99,7 @@ export default function Posts() {
         <div className="loader"><div className="spin" style={{ width: 28, height: 28 }} /></div>
       ) : posts.length === 0 ? (
         <div className="card" style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-          <div style={{ display:"flex",justifyContent:"center",marginBottom:"1rem" }}><div style={{ width:64,height:64,borderRadius:"50%",background:"var(--green-pale)",display:"flex",alignItems:"center",justifyContent:"center" }}><Icon name="image" size={28} color="var(--green)" /></div></div>
+          <p style={{ fontSize: 40, marginBottom: '1rem' }}>📸</p>
           <p style={{ fontWeight: 500, fontSize: 16, color: 'var(--dark)', marginBottom: 8 }}>No posts yet {skillFilter !== 'All' ? `for ${skillFilter}` : ''}</p>
           <p style={{ fontSize: 14, color: 'var(--muted)', marginBottom: '1.5rem' }}>
             {user && profile?.skill ? 'Be the first to share your work!' : 'Service providers will post their work here soon.'}
@@ -113,7 +112,7 @@ export default function Posts() {
             <div key={post.id} className="post-card" onClick={() => setSelectedPost(post)}>
               {post.images?.[0]
                 ? <img className="post-img" src={post.images[0]} alt={post.caption} loading="lazy" />
-                : <div className="post-img-placeholder"><Icon name="image" size={36} color="var(--green-light)" /></div>
+                : <div className="post-img-placeholder">📋</div>
               }
               <div style={{ padding: '0.875rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
@@ -130,7 +129,7 @@ export default function Posts() {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 }}>
                   <button onClick={e => { e.stopPropagation(); toggleLike(post.id, post.liked, post.likes || 0) }}
                     style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: post.liked ? '#E53E3E' : 'var(--muted)', fontFamily: 'DM Sans, sans-serif' }}>
-                    <Icon name="heart" size={16} color={post.liked ? '#E53E3E' : 'var(--muted)'} filled={post.liked} />
+                    <span style={{ fontSize: 16 }}>{post.liked ? '❤️' : '🤍'}</span>
                     {post.likes || 0}
                   </button>
                   <span style={{ fontSize: 11, color: 'var(--muted)' }}>{timeAgo(post.created_at)}</span>
@@ -175,7 +174,7 @@ export default function Posts() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
                 <button onClick={() => toggleLike(selectedPost.id, selectedPost.liked, selectedPost.likes || 0)}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontSize: 15, color: selectedPost.liked ? '#E53E3E' : 'var(--muted)', fontFamily: 'DM Sans, sans-serif', fontWeight: 500 }}>
-                  <Icon name="heart" size={22} color={selectedPost.liked ? '#E53E3E' : 'var(--muted)'} filled={selectedPost.liked} />
+                  <span style={{ fontSize: 22 }}>{selectedPost.liked ? '❤️' : '🤍'}</span>
                   {selectedPost.likes || 0} likes
                 </button>
                 <div style={{ display: 'flex', gap: 10 }}>
@@ -265,7 +264,7 @@ function CreatePost({ onClose, onCreated, profile }) {
               </div>
             ) : (
               <>
-                <div style={{ display:"flex",justifyContent:"center",marginBottom:8 }}><Icon name="image" size={32} color="var(--muted)" /></div>
+                <p style={{ fontSize: 32, marginBottom: 8 }}>📸</p>
                 <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--dark)', marginBottom: 4 }}>Upload photos of your work</p>
                 <p style={{ fontSize: 12, color: 'var(--muted)' }}>Up to 5 photos · JPG, PNG or WebP · Max 5MB each</p>
               </>
@@ -279,7 +278,7 @@ function CreatePost({ onClose, onCreated, profile }) {
           </div>
 
           <div style={{ background: 'var(--green-pale)', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Icon name="award" size={16} color="var(--green-mid)" />
+            <span style={{ fontSize: 16 }}>🏷️</span>
             <p style={{ fontSize: 13, color: 'var(--green-mid)' }}>This post will be tagged as <strong>{profile?.skill || 'Other'}</strong></p>
           </div>
 

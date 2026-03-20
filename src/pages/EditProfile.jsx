@@ -29,7 +29,7 @@ export default function EditProfile() {
 
   return (
     <div className="page-sm" style={{ padding: '2rem 1rem' }}>
-      <h1 style={{ fontSize: 26, color: 'var(--green)', marginBottom: 8 }}>Edit profile</h1>
+      <div className="page-header"><h1>Edit profile</h1><p>Update your information and how you appear to others.</p></div>
       <p style={{ color: 'var(--muted)', fontSize: 14, marginBottom: '1.5rem' }}>A complete profile builds more trust with people who find you.</p>
 
       <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>

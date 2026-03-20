@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../supabase'
 import TrustRing from '../components/TrustRing'
-import Icon from '../components/Icon'
 import ShareCard from '../components/ShareCard'
 import AvatarUpload from '../components/AvatarUpload'
+import Avatar from '../components/Avatar'
 
 export default function Dashboard() {
   const { user, profile, fetchProfile } = useAuth()
@@ -19,123 +19,158 @@ export default function Dashboard() {
     setLoading(true)
     await fetchProfile(user.id)
     const [r, g] = await Promise.all([
-      supabase.from('vouches').select('*, voucher:profiles!vouches_voucher_id_fkey(id,full_name,skill,trust_score)').eq('vouchee_id', user.id).order('created_at', { ascending: false }),
-      supabase.from('vouches').select('*, vouchee:profiles!vouches_vouchee_id_fkey(id,full_name,skill)').eq('voucher_id', user.id).order('created_at', { ascending: false })
+      supabase.from('vouches').select('*, voucher:profiles!vouches_voucher_id_fkey(id,full_name,skill,trust_score,avatar_url)').eq('vouchee_id', user.id).order('created_at', { ascending: false }),
+      supabase.from('vouches').select('*, vouchee:profiles!vouches_vouchee_id_fkey(id,full_name,skill,avatar_url)').eq('voucher_id', user.id).order('created_at', { ascending: false })
     ])
-    setReceived(r.data || []); setGiven(g.data || [])
+    setReceived(r.data || [])
+    setGiven(g.data || [])
     setLoading(false)
   }
 
-  if (loading) return <div className="loader"><div className="spin" style={{ width: 32, height: 32 }} /></div>
+  if (loading) return <div className="loader"><div className="spin" style={{ width: 36, height: 36 }} /></div>
 
   const score = profile?.trust_score || 0
   const next = score >= 70 ? 100 : score >= 40 ? 70 : 40
   const pct = Math.min(100, Math.round((score / next) * 100))
+  const levelLabel = score >= 70 ? 'Highly Trusted' : score >= 40 ? 'Growing' : score >= 20 ? 'Building Trust' : 'New Member'
+  const levelColor = score >= 70 ? 'var(--green-mid)' : score >= 40 ? '#9A6700' : 'var(--muted)'
 
   return (
     <div className="page">
       <style>{`
-        .dash-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-bottom: 1.25rem; }
-        .actions { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
-        @media(min-width:480px) { .dash-grid { grid-template-columns: repeat(3,1fr); } }
+        .dash-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; }
+        .dash-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .vouch-row { display: flex; align-items: center; gap: 14px; padding: 1rem 0; border-bottom: 1px solid var(--border); }
+        .vouch-row:last-child { border-bottom: none; }
+        @media(max-width:480px) { .dash-stats { grid-template-columns: 1fr 1fr; } .dash-actions .btn { flex: 1; min-width: 120px; } }
       `}</style>
 
-      {/* Profile header */}
-      <div className="card" style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center', marginBottom: '1.25rem', borderTop: '3px solid var(--green-light)', padding: '1.5rem' }}>
-        <AvatarUpload size={72} />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <h2 style={{ fontSize: 20, color: 'var(--green)', marginBottom: 4 }}>{profile?.full_name}</h2>
-          <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 6 }}>{profile?.email}</p>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {profile?.skill && <span className="badge badge-green">{profile.skill}</span>}
-            {profile?.location && <span className="badge badge-gray">{profile.location}</span>}
+      {/* ── PROFILE HEADER ── */}
+      <div className="card" style={{ marginBottom: '1.5rem', padding: '2rem' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.5rem', flexWrap: 'wrap' }}>
+          <AvatarUpload size={80} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h1 style={{ fontSize: 22, color: 'var(--green)', marginBottom: 4 }}>{profile?.full_name}</h1>
+            <p style={{ fontSize: 14, color: 'var(--muted)', marginBottom: 10 }}>{profile?.email}</p>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+              {profile?.skill && <span className="badge badge-green">{profile.skill}</span>}
+              {profile?.location && <span className="badge badge-gray">{profile.location}</span>}
+              <span style={{ fontSize: 13, fontWeight: 500, color: levelColor }}>{levelLabel}</span>
+            </div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+            <TrustRing score={score} size={80} />
           </div>
         </div>
-        <TrustRing score={score} size={85} />
+
+        {/* Progress bar */}
+        {score < 100 && (
+          <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+              <p style={{ fontSize: 13, color: 'var(--muted)' }}>Progress to <strong style={{ color: 'var(--dark)' }}>{next === 40 ? 'Growing' : next === 70 ? 'Highly Trusted' : 'Maximum'}</strong></p>
+              <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--green)' }}>{score} / {next} pts</p>
+            </div>
+            <div style={{ height: 7, background: 'var(--border)', borderRadius: 99, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${pct}%`, background: 'var(--green-light)', borderRadius: 99, transition: 'width 1s ease' }} />
+            </div>
+            <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 6 }}>
+              {next - score} more points needed — get people to vouch for you
+            </p>
+          </div>
+        )}
       </div>
 
-      {/* Progress bar */}
-      {score < 100 && (
-        <div className="card" style={{ marginBottom: '1.25rem', padding: '1rem 1.25rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-            <p style={{ fontSize: 13, color: 'var(--muted)' }}>Progress to next level</p>
-            <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--green)' }}>{score} / {next}</p>
-          </div>
-          <div style={{ height: 8, background: 'var(--border)', borderRadius: 99, overflow: 'hidden' }}>
-            <div style={{ height: '100%', width: `${pct}%`, background: 'var(--green-light)', borderRadius: 99, transition: 'width 0.8s ease' }} />
-          </div>
-          <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 6 }}>{next - score} more points to reach {next === 40 ? 'Growing' : next === 70 ? 'Highly Trusted' : 'Maximum'} status</p>
+      {/* ── STATS ── */}
+      <div className="dash-stats" style={{ marginBottom: '1.5rem' }}>
+        <div style={{ background: 'var(--green-pale)', border: '1px solid #c3e8d8', borderRadius: 14, padding: '1.25rem', textAlign: 'center' }}>
+          <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--green-mid)', marginBottom: 8 }}>Trust Score</p>
+          <p style={{ fontFamily: 'Fraunces, serif', fontSize: 32, fontWeight: 700, color: 'var(--green)', lineHeight: 1 }}>{score}<span style={{ fontSize: 16, color: 'var(--muted)' }}>/100</span></p>
         </div>
-      )}
-
-      {/* Stats */}
-      <div className="dash-grid">
-        {[
-          { label: 'Trust score', value: `${score}/100`, bg: 'var(--green-pale)', color: 'var(--green)' },
-          { label: 'Vouches received', value: received.length, bg: 'var(--green-pale)', color: 'var(--green)' },
-          { label: 'Vouches given', value: given.length, bg: 'var(--amber-light)', color: '#9A6700' },
-        ].map(({ label, value, bg, color }) => (
-          <div key={label} style={{ background: bg, borderRadius: 12, padding: '1.25rem', textAlign: 'center' }}>
-            <p style={{ fontSize: 12, color, marginBottom: 4, opacity: 0.8 }}>{label}</p>
-            <p style={{ fontFamily: 'Fraunces, serif', fontSize: 26, fontWeight: 700, color }}>{value}</p>
-          </div>
-        ))}
+        <div style={{ background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 14, padding: '1.25rem', textAlign: 'center' }}>
+          <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 8 }}>Vouches Received</p>
+          <p style={{ fontFamily: 'Fraunces, serif', fontSize: 32, fontWeight: 700, color: 'var(--green)', lineHeight: 1 }}>{received.length}</p>
+        </div>
+        <div style={{ background: 'var(--amber-light)', border: '1px solid #f5dba8', borderRadius: 14, padding: '1.25rem', textAlign: 'center' }}>
+          <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#9A6700', marginBottom: 8 }}>Vouches Given</p>
+          <p style={{ fontFamily: 'Fraunces, serif', fontSize: 32, fontWeight: 700, color: '#9A6700', lineHeight: 1 }}>{given.length}</p>
+        </div>
       </div>
 
-      {/* Actions */}
-      <div className="actions">
+      {/* ── QUICK ACTIONS ── */}
+      <div className="dash-actions" style={{ marginBottom: '2rem' }}>
         <Link to="/vouch"><button className="btn btn-green">+ Vouch for someone</button></Link>
-        <Link to="/search"><button className="btn btn-outline">Search services</button></Link>
-        <Link to="/edit-profile"><button className="btn btn-outline">Edit profile</button></Link>
-        <Link to={`/profile/${user?.id}`}><button className="btn btn-outline">Public profile</button></Link>
+        <Link to="/search"><button className="btn btn-ghost">Find services</button></Link>
+        <Link to="/edit-profile"><button className="btn btn-ghost">Edit profile</button></Link>
+        <Link to={`/profile/${user?.id}`}><button className="btn btn-ghost">My public profile</button></Link>
       </div>
 
-      <ShareCard profileId={user?.id} name={profile?.full_name} />
+      {/* ── SHARE CARD ── */}
+      <div style={{ marginBottom: '2rem' }}>
+        <ShareCard profileId={user?.id} name={profile?.full_name} />
+      </div>
 
-      {/* Vouches received */}
-      <h3 style={{ fontSize: 17, color: 'var(--green)', margin: '2rem 0 1rem' }}>Vouches received ({received.length})</h3>
-      {received.length === 0 ? (
-        <div className="card" style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)' }}>
-          <p style={{ fontSize: 14 }}>No vouches yet. Share your profile link and ask people who know your work!</p>
+      {/* ── VOUCHES RECEIVED ── */}
+      <div style={{ marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+          <h2 style={{ fontSize: 18, color: 'var(--green)' }}>Vouches received</h2>
+          <span className="badge badge-green">{received.length}</span>
         </div>
-      ) : received.map(v => (
-        <div key={v.id} className="card" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
-          <Link to={`/profile/${v.voucher?.id}`} style={{ flexShrink: 0 }}>
-            <div style={{ width: 42, height: 42, borderRadius: '50%', background: 'var(--green-pale)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700, color: 'var(--green)' }}>
-              {v.voucher?.full_name?.charAt(0).toUpperCase()}
-            </div>
-          </Link>
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 3 }}>
-              <Link to={`/profile/${v.voucher?.id}`} style={{ fontWeight: 500, fontSize: 14 }}>{v.voucher?.full_name}</Link>
-              <span className="badge badge-gray" style={{ fontSize: 11 }}>{v.voucher?.skill}</span>
-            </div>
-            {v.message && <p style={{ fontSize: 13, fontStyle: 'italic', borderLeft: '2px solid var(--green-light)', paddingLeft: 10, lineHeight: 1.6 }}>"{v.message}"</p>}
+        {received.length === 0 ? (
+          <div className="empty-state">
+            <p style={{ marginBottom: '0.5rem', fontWeight: 500, color: 'var(--dark)' }}>No vouches yet</p>
+            <p>Share your profile link with people who know your work and ask them to vouch for you.</p>
           </div>
-          <span className="badge badge-green" style={{ flexShrink: 0 }}>+{v.weight}pts</span>
-        </div>
-      ))}
+        ) : (
+          <div className="card" style={{ padding: '0.5rem 1.5rem' }}>
+            {received.map(v => (
+              <div key={v.id} className="vouch-row">
+                <Link to={`/profile/${v.voucher?.id}`}>
+                  <Avatar profile={v.voucher} size={44} />
+                </Link>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: v.message ? 5 : 0 }}>
+                    <Link to={`/profile/${v.voucher?.id}`} style={{ fontWeight: 600, fontSize: 14, color: 'var(--dark)' }}>{v.voucher?.full_name}</Link>
+                    {v.voucher?.skill && <span className="badge badge-gray" style={{ fontSize: 11 }}>{v.voucher.skill}</span>}
+                  </div>
+                  {v.message && (
+                    <p style={{ fontSize: 13, color: 'var(--muted)', fontStyle: 'italic', lineHeight: 1.55, borderLeft: '2px solid var(--green-light)', paddingLeft: 10 }}>"{v.message}"</p>
+                  )}
+                </div>
+                <span className="badge badge-green" style={{ flexShrink: 0, fontWeight: 600 }}>+{v.weight} pts</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
-      {/* Vouches given */}
-      <h3 style={{ fontSize: 17, color: 'var(--green)', margin: '2rem 0 1rem' }}>Vouches I gave ({given.length})</h3>
-      {given.length === 0 ? (
-        <div className="card" style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)' }}>
-          <p style={{ fontSize: 14 }}>You haven't vouched for anyone yet. <Link to="/vouch" style={{ color: 'var(--green)', fontWeight: 500 }}>Vouch for someone →</Link></p>
+      {/* ── VOUCHES GIVEN ── */}
+      <div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+          <h2 style={{ fontSize: 18, color: 'var(--green)' }}>People I've vouched for</h2>
+          <span className="badge badge-amber">{given.length}</span>
         </div>
-      ) : given.map(v => (
-        <div key={v.id} className="card" style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '0.75rem' }}>
-          <Link to={`/profile/${v.vouchee?.id}`} style={{ flexShrink: 0 }}>
-            <div style={{ width: 42, height: 42, borderRadius: '50%', background: 'var(--amber-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700, color: '#9A6700' }}>
-              {v.vouchee?.full_name?.charAt(0).toUpperCase()}
-            </div>
-          </Link>
-          <div style={{ flex: 1 }}>
-            <p style={{ fontWeight: 500, fontSize: 14 }}>{v.vouchee?.full_name}</p>
-            <p style={{ fontSize: 13, color: 'var(--muted)' }}>{v.vouchee?.skill}</p>
+        {given.length === 0 ? (
+          <div className="empty-state">
+            <p style={{ marginBottom: '0.5rem', fontWeight: 500, color: 'var(--dark)' }}>You haven't vouched for anyone yet</p>
+            <p>Know a great mechanic, lawyer or designer? <Link to="/vouch" style={{ color: 'var(--green)', fontWeight: 500 }}>Vouch for them →</Link></p>
           </div>
-          <span className="badge badge-amber">Vouched</span>
-        </div>
-      ))}
+        ) : (
+          <div className="card" style={{ padding: '0.5rem 1.5rem' }}>
+            {given.map(v => (
+              <div key={v.id} className="vouch-row">
+                <Link to={`/profile/${v.vouchee?.id}`}>
+                  <Avatar profile={v.vouchee} size={44} />
+                </Link>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontWeight: 600, fontSize: 14, color: 'var(--dark)' }}>{v.vouchee?.full_name}</p>
+                  <p style={{ fontSize: 13, color: 'var(--muted)' }}>{v.vouchee?.skill || 'No skill set'}</p>
+                </div>
+                <span className="badge badge-amber">Vouched</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

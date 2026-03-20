@@ -65,8 +65,8 @@ export default function Vouch() {
 
   return (
     <div className="page-sm" style={{ padding: '2rem 1rem' }}>
-      <h1 style={{ fontSize: 26, color: 'var(--green)', marginBottom: 8 }}>Vouch for someone</h1>
-      <p style={{ color: 'var(--muted)', fontSize: 14, lineHeight: 1.65, marginBottom: '1.5rem' }}>
+      <div className="page-header"><h1>Vouch for someone</h1>
+      <p style={{ color: 'var(--muted)', fontSize: 15, lineHeight: 1.7, marginBottom: 0 }}>
         Search for someone you trust personally. Your vouch increases their trust score and reflects on your own reputation.
       </p>
 

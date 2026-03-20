@@ -10,9 +10,12 @@ export default function Posts() {
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(false)
+  const [skillFilter, setSkillFilter] = useState('All')
   const [selectedPost, setSelectedPost] = useState(null)
 
-  useEffect(() => { loadPosts() }, [])
+  const SKILLS = ['All','Mechanic','Electrician','Plumber','Lawyer','Doctor','Accountant','Graphic Designer','Web Developer','Chef / Caterer','Tailor / Fashion','Hair Stylist','Photographer','Driver','Carpenter','Painter','Real Estate Agent','Teacher / Tutor','Other']
+
+  useEffect(() => { loadPosts() }, [skillFilter])
 
   async function loadPosts() {
     setLoading(true)
@@ -20,6 +23,7 @@ export default function Posts() {
       .select('*, author:profiles!posts_author_id_fkey(id,full_name,skill,trust_score,avatar_url)')
       .order('created_at', { ascending: false })
       .limit(50)
+    if (skillFilter !== 'All') q = q.eq('skill_tag', skillFilter)
     const { data } = await q
     setPosts(data || [])
     setLoading(false)
@@ -56,6 +60,9 @@ export default function Posts() {
         .post-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
         .post-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; background: var(--cream); display: block; }
         .post-img-placeholder { width: 100%; aspect-ratio: 4/3; background: var(--green-pale); display: flex; align-items: center; justify-content: center; font-size: 40px; }
+        .filter-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+        .fpill { padding: 7px 16px; border-radius: 999px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: white; color: var(--dark); font-family: DM Sans, sans-serif; transition: all 0.15s; white-space: nowrap; }
+        .fpill.active { background: var(--green); color: white; border-color: var(--green); }
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 1rem; }
         .modal-box { background: white; border-radius: 20px; max-width: 800px; width: 100%; max-height: 90vh; overflow-y: auto; }
         @media(max-width:600px) { .posts-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; } }
@@ -80,7 +87,12 @@ export default function Posts() {
         )}
       </div>
 
-
+      {/* Skill filters */}
+      <div className="filter-pills">
+        {SKILLS.map(s => (
+          <button key={s} className={`fpill ${skillFilter === s ? 'active' : ''}`} onClick={() => setSkillFilter(s)}>{s}</button>
+        ))}
+      </div>
 
       {/* Posts grid */}
       {loading ? (

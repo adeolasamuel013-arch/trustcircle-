@@ -25,25 +25,12 @@ export default function Navbar() {
 
   async function fetchCounts() {
     if (!user) return
-    const [{ count: m }, profileRes] = await Promise.all([
+    const [{ count: m }, { count: n }] = await Promise.all([
       supabase.from('messages').select('*', { count: 'exact', head: true }).eq('receiver_id', user.id).eq('read', false),
-      supabase.from('profiles').select('notifs_last_read').eq('id', user.id).single()
+      supabase.from('vouches').select('*', { count: 'exact', head: true }).eq('vouchee_id', user.id).gte('created_at', new Date(Date.now() - 7 * 86400000).toISOString())
     ])
     setUnreadMsgs(m || 0)
-    // Count vouches newer than last read time
-    const lastRead = profileRes.data?.notifs_last_read
-    if (lastRead) {
-      const { count: n } = await supabase.from('vouches')
-        .select('*', { count: 'exact', head: true })
-        .eq('vouchee_id', user.id)
-        .gt('created_at', lastRead)
-      setUnreadNotifs(n || 0)
-    } else {
-      const { count: n } = await supabase.from('vouches')
-        .select('*', { count: 'exact', head: true })
-        .eq('vouchee_id', user.id)
-      setUnreadNotifs(n || 0)
-    }
+    setUnreadNotifs(n || 0)
   }
 
   async function handleSignOut() { await signOut(); navigate('/') }
@@ -98,7 +85,7 @@ export default function Navbar() {
       <nav className="nav">
         <Link to={user ? '/dashboard' : '/'} className="nav-brand">
           <div className="nav-brand-dot" />
-          Pruv
+          Prov
         </Link>
 
         {/* Desktop links */}
@@ -146,7 +133,7 @@ export default function Navbar() {
           <div className="drawer-overlay" onClick={() => setMenuOpen(false)} />
           <div className="drawer">
             <div className="drawer-head">
-              <span style={{ fontFamily: 'Fraunces, serif', fontSize: 18, fontWeight: 900, color: 'var(--green)' }}>Pruv</span>
+              <span style={{ fontFamily: 'Fraunces, serif', fontSize: 18, fontWeight: 900, color: 'var(--green)' }}>Prov</span>
               <button onClick={() => setMenuOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: 20, lineHeight: 1 }}>✕</button>
             </div>
             {user && (

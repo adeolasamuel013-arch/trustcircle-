@@ -88,7 +88,7 @@ export default function Posts() {
       ) : posts.length === 0 ? (
         <div className="card" style={{ textAlign: 'center', padding: '4rem 2rem' }}>
           <p style={{ fontSize: 40, marginBottom: '1rem' }}>📸</p>
-          <p style={{ fontWeight: 500, fontSize: 16, color: 'var(--dark)', marginBottom: 8 }}>No posts yet {skillFilter !== 'All' ? `for ${skillFilter}` : ''}</p>
+          <p style={{ fontWeight: 500, fontSize: 16, color: 'var(--dark)', marginBottom: 8 }}>No posts yet</p>
           <p style={{ fontSize: 14, color: 'var(--muted)', marginBottom: '1.5rem' }}>
             {user && profile?.skill ? 'Be the first to share your work!' : 'Service providers will post their work here soon.'}
           </p>

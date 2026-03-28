@@ -103,17 +103,11 @@ export default function Admin() {
     setConversations(convList)
   }
 
- async function deleteUser(id, name) {
+async function deleteUser(id, name) {
   if (!confirm(`Delete ${name}? This will delete all their vouches, messages and reports.`)) return
   try {
-    await supabase.from('vouches').delete().or(`voucher_id.eq.${id},vouchee_id.eq.${id}`)
-    await supabase.from('messages').delete().or(`sender_id.eq.${id},receiver_id.eq.${id}`)
-    await supabase.from('reports').delete().or(`reporter_id.eq.${id},reported_id.eq.${id}`)
-    await supabase.from('profiles').delete().eq('id', id)
-
-    // Also delete their login account
     const { data: { session } } = await supabase.auth.getSession()
-    await fetch(`https://bjcayozrlzogjkxniuee.supabase.co/functions/v1/delete-user`, {
+    const res = await fetch(`https://bjcayozrlzogjkxniuee.supabase.co/functions/v1/delete-user`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -121,6 +115,9 @@ export default function Admin() {
       },
       body: JSON.stringify({ userId: id }),
     })
+
+    const result = await res.json()
+    if (!res.ok) throw new Error(result.error || 'Delete failed')
 
     setUsers(u => u.filter(x => x.id !== id))
     showToast(`${name} has been deleted.`)

@@ -51,136 +51,400 @@ export default function Posts() {
   return (
     <div className="page">
       <style>{`
-        .posts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
-        .post-card { background: white; border-radius: 16px; border: 1px solid var(--border); overflow: hidden; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
-        .post-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
-        .post-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; background: var(--cream); display: block; }
-        .post-img-placeholder { width: 100%; aspect-ratio: 4/3; background: var(--green-pale); display: flex; align-items: center; justify-content: center; font-size: 40px; }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 1rem; }
-        .modal-box { background: white; border-radius: 20px; max-width: 800px; width: 100%; max-height: 90vh; overflow-y: auto; }
-        @media(max-width:600px) { .posts-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; } }
+        .feed-wrap {
+          max-width: 600px;
+          margin: 0 auto;
+        }
+        .feed-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 1.75rem;
+        }
+        .post-card {
+          background: white;
+          border-radius: 18px;
+          border: 1px solid var(--border);
+          margin-bottom: 1.25rem;
+          overflow: hidden;
+          transition: box-shadow 0.2s;
+        }
+        .post-card:hover {
+          box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .post-header {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 14px 16px;
+        }
+        .post-author-info { flex: 1; min-width: 0; }
+        .post-author-name {
+          font-weight: 600;
+          font-size: 14px;
+          color: var(--dark);
+          margin-bottom: 2px;
+        }
+        .post-meta {
+          font-size: 12px;
+          color: var(--muted);
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .post-image-wrap {
+          width: 100%;
+          background: var(--cream);
+          position: relative;
+          cursor: pointer;
+        }
+        .post-image-wrap img {
+          width: 100%;
+          max-height: 500px;
+          object-fit: cover;
+          display: block;
+        }
+        .post-placeholder {
+          width: 100%;
+          min-height: 200px;
+          background: var(--green-pale);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 48px;
+          cursor: pointer;
+        }
+        .multi-img-dots {
+          position: absolute;
+          bottom: 10px;
+          left: 50%;
+          transform: translateX(-50%);
+          display: flex;
+          gap: 5px;
+        }
+        .img-dot {
+          width: 6px; height: 6px;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.6);
+        }
+        .img-dot.active { background: white; }
+        .post-actions {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          padding: 10px 14px 4px;
+        }
+        .action-btn {
+          background: none;
+          border: none;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 7px 10px;
+          border-radius: 10px;
+          font-size: 13px;
+          font-family: DM Sans, sans-serif;
+          font-weight: 500;
+          color: var(--muted);
+          transition: background 0.15s, color 0.15s;
+        }
+        .action-btn:hover { background: var(--cream); }
+        .action-btn.liked { color: #E53E3E; }
+        .post-caption {
+          padding: 4px 16px 14px;
+          font-size: 14px;
+          color: var(--dark);
+          line-height: 1.6;
+        }
+        .post-caption strong {
+          color: var(--green-mid);
+          margin-right: 6px;
+          font-weight: 600;
+        }
+        .img-strip {
+          display: flex;
+          gap: 3px;
+          overflow-x: auto;
+          padding: 0 16px 12px;
+          scrollbar-width: none;
+        }
+        .img-strip::-webkit-scrollbar { display: none; }
+        .img-strip img {
+          width: 70px;
+          height: 70px;
+          object-fit: cover;
+          border-radius: 10px;
+          flex-shrink: 0;
+          cursor: pointer;
+          border: 2px solid transparent;
+          transition: border-color 0.15s;
+        }
+        .img-strip img:hover { border-color: var(--green); }
+        .modal-overlay {
+          position: fixed; inset: 0;
+          background: rgba(0,0,0,0.8);
+          z-index: 300;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 1rem;
+          backdrop-filter: blur(4px);
+        }
+        .modal-box {
+          background: white;
+          border-radius: 20px;
+          max-width: 680px;
+          width: 100%;
+          max-height: 92vh;
+          overflow-y: auto;
+        }
+        .modal-img { width: 100%; max-height: 420px; object-fit: cover; border-radius: 20px 20px 0 0; display: block; }
+        .modal-body { padding: 1.25rem; }
+        .trust-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          background: var(--green-pale);
+          color: var(--green-mid);
+          font-size: 11px;
+          font-weight: 600;
+          padding: 3px 9px;
+          border-radius: 999px;
+        }
+        .share-btn {
+          background: var(--green);
+          color: white;
+          border: none;
+          border-radius: 12px;
+          padding: 11px 22px;
+          font-size: 14px;
+          font-weight: 600;
+          font-family: DM Sans, sans-serif;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          transition: opacity 0.15s;
+        }
+        .share-btn:hover { opacity: 0.88; }
+        .empty-feed {
+          text-align: center;
+          padding: 5rem 2rem;
+          background: white;
+          border-radius: 20px;
+          border: 1px solid var(--border);
+        }
+        @media(max-width: 600px) {
+          .feed-wrap { max-width: 100%; }
+        }
       `}</style>
 
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <h1 style={{ fontSize: 26, color: 'var(--green)', marginBottom: 6 }}>Work Showcase</h1>
-          <p style={{ color: 'var(--muted)', fontSize: 14 }}>See real work from trusted service providers across Nigeria</p>
+      <div className="feed-wrap">
+        {/* Header */}
+        <div className="feed-header">
+          <div>
+            <h1 style={{ fontSize: 24, color: 'var(--green)', marginBottom: 4, fontFamily: 'Fraunces, serif' }}>Work Showcase</h1>
+            <p style={{ color: 'var(--muted)', fontSize: 13 }}>Real work from trusted service providers</p>
+          </div>
+          {user && profile?.skill ? (
+            <button onClick={() => setShowCreate(true)} className="share-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Post
+            </button>
+          ) : user && !profile?.skill ? (
+            <Link to="/edit-profile">
+              <button className="btn btn-outline" style={{ fontSize: 13 }}>Add skill to post</button>
+            </Link>
+          ) : null}
         </div>
-        {user && profile?.skill && (
-          <button onClick={() => setShowCreate(true)} className="btn btn-green" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Share your work
-          </button>
-        )}
-        {user && !profile?.skill && (
-          <Link to="/edit-profile">
-            <button className="btn btn-outline" style={{ fontSize: 13 }}>Add your skill to post</button>
-          </Link>
+
+        {/* Feed */}
+        {loading ? (
+          <div className="loader"><div className="spin" style={{ width: 28, height: 28 }} /></div>
+        ) : posts.length === 0 ? (
+          <div className="empty-feed">
+            <p style={{ fontSize: 48, marginBottom: '1rem' }}>📸</p>
+            <p style={{ fontWeight: 600, fontSize: 16, color: 'var(--dark)', marginBottom: 8 }}>No posts yet</p>
+            <p style={{ fontSize: 14, color: 'var(--muted)', marginBottom: '1.5rem' }}>
+              {user && profile?.skill ? 'Be the first to share your work!' : 'Service providers will post their work here soon.'}
+            </p>
+            {user && profile?.skill && (
+              <button onClick={() => setShowCreate(true)} className="share-btn" style={{ margin: '0 auto' }}>Share your work</button>
+            )}
+          </div>
+        ) : (
+          posts.map(post => (
+            <PostCard key={post.id} post={post} onLike={toggleLike} onOpen={setSelectedPost} timeAgo={timeAgo} user={user} />
+          ))
         )}
       </div>
 
-
-
-      {/* Posts grid */}
-      {loading ? (
-        <div className="loader"><div className="spin" style={{ width: 28, height: 28 }} /></div>
-      ) : posts.length === 0 ? (
-        <div className="card" style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-          <p style={{ fontSize: 40, marginBottom: '1rem' }}>📸</p>
-          <p style={{ fontWeight: 500, fontSize: 16, color: 'var(--dark)', marginBottom: 8 }}>No posts yet</p>
-          <p style={{ fontSize: 14, color: 'var(--muted)', marginBottom: '1.5rem' }}>
-            {user && profile?.skill ? 'Be the first to share your work!' : 'Service providers will post their work here soon.'}
-          </p>
-          {user && profile?.skill && <button onClick={() => setShowCreate(true)} className="btn btn-green">Share your work</button>}
-        </div>
-      ) : (
-        <div className="posts-grid">
-          {posts.map(post => (
-            <div key={post.id} className="post-card" onClick={() => setSelectedPost(post)}>
-              {post.images?.[0]
-                ? <img className="post-img" src={post.images[0]} alt={post.caption} loading="lazy" />
-                : <div className="post-img-placeholder">📋</div>
-              }
-              <div style={{ padding: '0.875rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                  <Avatar profile={post.author} size={30} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{post.author?.full_name}</p>
-                    <p style={{ fontSize: 11, color: 'var(--muted)' }}>{post.skill_tag}</p>
-                  </div>
-                  {post.images?.length > 1 && (
-                    <span style={{ fontSize: 11, color: 'var(--muted)', background: 'var(--cream)', padding: '2px 8px', borderRadius: 999 }}>+{post.images.length - 1}</span>
-                  )}
-                </div>
-                {post.caption && <p style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.5, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{post.caption}</p>}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 }}>
-                  <button onClick={e => { e.stopPropagation(); toggleLike(post.id, post.liked, post.likes || 0) }}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: post.liked ? '#E53E3E' : 'var(--muted)', fontFamily: 'DM Sans, sans-serif' }}>
-                    <span style={{ fontSize: 16 }}>{post.liked ? '❤️' : '🤍'}</span>
-                    {post.likes || 0}
-                  </button>
-                  <span style={{ fontSize: 11, color: 'var(--muted)' }}>{timeAgo(post.created_at)}</span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Post detail modal */}
+      {/* Detail Modal */}
       {selectedPost && (
         <div className="modal-overlay" onClick={() => setSelectedPost(null)}>
           <div className="modal-box" onClick={e => e.stopPropagation()}>
             {selectedPost.images?.length > 0 && (
-              <div style={{ position: 'relative' }}>
-                <img src={selectedPost.images[0]} alt="" style={{ width: '100%', maxHeight: 400, objectFit: 'cover', borderRadius: '20px 20px 0 0' }} />
+              <>
+                <img className="modal-img" src={selectedPost.images[0]} alt="" />
                 {selectedPost.images.length > 1 && (
-                  <div style={{ display: 'flex', gap: 6, padding: '8px 16px', background: 'var(--cream)', overflowX: 'auto' }}>
+                  <div style={{ display: 'flex', gap: 6, padding: '10px 16px', background: 'var(--cream)', overflowX: 'auto' }}>
                     {selectedPost.images.map((img, i) => (
-                      <img key={i} src={img} alt="" style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 8, flexShrink: 0, cursor: 'pointer', border: i === 0 ? '2px solid var(--green)' : '2px solid transparent' }} />
+                      <img key={i} src={img} alt="" style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 10, flexShrink: 0, cursor: 'pointer', border: i === 0 ? '2px solid var(--green)' : '2px solid transparent' }} />
                     ))}
                   </div>
                 )}
-              </div>
+              </>
             )}
-            <div style={{ padding: '1.25rem' }}>
+            <div className="modal-body">
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '1rem' }}>
                 <Link to={`/profile/${selectedPost.author?.id}`} onClick={() => setSelectedPost(null)}>
                   <Avatar profile={selectedPost.author} size={46} />
                 </Link>
                 <div style={{ flex: 1 }}>
-                  <Link to={`/profile/${selectedPost.author?.id}`} onClick={() => setSelectedPost(null)} style={{ fontWeight: 600, fontSize: 15, color: 'var(--dark)' }}>{selectedPost.author?.full_name}</Link>
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 3 }}>
-                    <span className="badge badge-green" style={{ fontSize: 11 }}>{selectedPost.skill_tag}</span>
-                    <span style={{ fontSize: 11, color: 'var(--muted)' }}>Score: {selectedPost.author?.trust_score}</span>
+                  <Link to={`/profile/${selectedPost.author?.id}`} onClick={() => setSelectedPost(null)} style={{ fontWeight: 700, fontSize: 15, color: 'var(--dark)' }}>
+                    {selectedPost.author?.full_name}
+                  </Link>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 4 }}>
+                    <span className="trust-badge">🏷️ {selectedPost.skill_tag}</span>
+                    <span style={{ fontSize: 11, color: 'var(--muted)' }}>⭐ {selectedPost.author?.trust_score} trust score</span>
                   </div>
                 </div>
-                <span style={{ fontSize: 12, color: 'var(--muted)' }}>{timeAgo(selectedPost.created_at)}</span>
+                <button onClick={() => setSelectedPost(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: 22, padding: 4 }}>✕</button>
               </div>
-              {selectedPost.caption && <p style={{ fontSize: 15, color: 'var(--dark)', lineHeight: 1.7, marginBottom: '1rem' }}>{selectedPost.caption}</p>}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-                <button onClick={() => toggleLike(selectedPost.id, selectedPost.liked, selectedPost.likes || 0)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, fontSize: 15, color: selectedPost.liked ? '#E53E3E' : 'var(--muted)', fontFamily: 'DM Sans, sans-serif', fontWeight: 500 }}>
+
+              {selectedPost.caption && (
+                <p style={{ fontSize: 15, color: 'var(--dark)', lineHeight: 1.7, marginBottom: '1rem', padding: '0.875rem', background: 'var(--cream)', borderRadius: 12 }}>
+                  {selectedPost.caption}
+                </p>
+              )}
+
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border)', paddingTop: '1rem', marginBottom: '1rem' }}>
+                <button
+                  onClick={() => toggleLike(selectedPost.id, selectedPost.liked, selectedPost.likes || 0)}
+                  className={`action-btn ${selectedPost.liked ? 'liked' : ''}`}
+                  style={{ fontSize: 15 }}
+                >
                   <span style={{ fontSize: 22 }}>{selectedPost.liked ? '❤️' : '🤍'}</span>
                   {selectedPost.likes || 0} likes
                 </button>
-                <div style={{ display: 'flex', gap: 10 }}>
-                  <Link to={`/profile/${selectedPost.author?.id}`} onClick={() => setSelectedPost(null)}>
-                    <button className="btn btn-green" style={{ padding: '9px 18px', fontSize: 13 }}>View profile</button>
-                  </Link>
-                  {user && user.id !== selectedPost.author?.id && (
-                    <button onClick={() => { setSelectedPost(null); navigate(`/messages/${selectedPost.author?.id}`) }} className="btn btn-outline" style={{ padding: '9px 18px', fontSize: 13 }}>Message</button>
-                  )}
-                </div>
+                <span style={{ fontSize: 12, color: 'var(--muted)' }}>{timeAgo(selectedPost.created_at)}</span>
+              </div>
+
+              <div style={{ display: 'flex', gap: 10 }}>
+                <Link to={`/profile/${selectedPost.author?.id}`} onClick={() => setSelectedPost(null)} style={{ flex: 1 }}>
+                  <button className="btn btn-green btn-full" style={{ padding: '12px' }}>View Profile</button>
+                </Link>
+                {user && user.id !== selectedPost.author?.id && (
+                  <button
+                    onClick={() => { setSelectedPost(null); navigate(`/messages/${selectedPost.author?.id}`) }}
+                    className="btn btn-outline"
+                    style={{ padding: '12px 18px' }}
+                  >
+                    Message
+                  </button>
+                )}
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Create post modal */}
-      {showCreate && <CreatePost onClose={() => setShowCreate(false)} onCreated={() => { setShowCreate(false); loadPosts() }} profile={profile} />}
+      {/* Create Post Modal */}
+      {showCreate && (
+        <CreatePost
+          onClose={() => setShowCreate(false)}
+          onCreated={() => { setShowCreate(false); loadPosts() }}
+          profile={profile}
+        />
+      )}
+    </div>
+  )
+}
+
+function PostCard({ post, onLike, onOpen, timeAgo, user }) {
+  const [imgIndex, setImgIndex] = useState(0)
+  const images = post.images || []
+
+  return (
+    <div className="post-card">
+      {/* Header */}
+      <div className="post-header">
+        <Avatar profile={post.author} size={40} />
+        <div className="post-author-info">
+          <p className="post-author-name">{post.author?.full_name}</p>
+          <div className="post-meta">
+            <span style={{ background: 'var(--green-pale)', color: 'var(--green-mid)', padding: '2px 8px', borderRadius: 999, fontSize: 11, fontWeight: 600 }}>
+              {post.skill_tag}
+            </span>
+            <span>·</span>
+            <span>{timeAgo(post.created_at)}</span>
+          </div>
+        </div>
+        <Link to={`/profile/${post.author?.id}`}>
+          <button style={{ background: 'var(--green-pale)', color: 'var(--green-mid)', border: 'none', borderRadius: 10, padding: '6px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
+            View
+          </button>
+        </Link>
+      </div>
+
+      {/* Image */}
+      <div className="post-image-wrap" onClick={() => onOpen(post)}>
+        {images.length > 0 ? (
+          <>
+            <img src={images[imgIndex]} alt={post.caption} loading="lazy" />
+            {images.length > 1 && (
+              <div className="multi-img-dots">
+                {images.map((_, i) => (
+                  <div key={i} className={`img-dot ${i === imgIndex ? 'active' : ''}`} />
+                ))}
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="post-placeholder">📋</div>
+        )}
+      </div>
+
+      {/* Thumbnail strip for multiple images */}
+      {images.length > 1 && (
+        <div className="img-strip">
+          {images.map((img, i) => (
+            <img
+              key={i}
+              src={img}
+              alt=""
+              onClick={() => setImgIndex(i)}
+              style={{ border: i === imgIndex ? '2px solid var(--green)' : '2px solid transparent' }}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Actions */}
+      <div className="post-actions">
+        <button
+          className={`action-btn ${post.liked ? 'liked' : ''}`}
+          onClick={e => { e.stopPropagation(); onLike(post.id, post.liked, post.likes || 0) }}
+        >
+          <span style={{ fontSize: 20 }}>{post.liked ? '❤️' : '🤍'}</span>
+          <span>{post.likes || 0}</span>
+        </button>
+        <button className="action-btn" onClick={() => onOpen(post)}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          <span>View</span>
+        </button>
+      </div>
+
+      {/* Caption */}
+      {post.caption && (
+        <div className="post-caption">
+          <strong>{post.author?.full_name?.split(' ')[0]}</strong>
+          {post.caption}
+        </div>
+      )}
     </div>
   )
 }
@@ -231,29 +495,31 @@ function CreatePost({ onClose, onCreated, profile }) {
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', z: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', zIndex: 200 }}>
-      <div style={{ background: 'white', borderRadius: 20, width: '100%', maxWidth: 520, padding: '1.75rem' }}>
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', backdropFilter: 'blur(4px)' }}>
+      <div style={{ background: 'white', borderRadius: 22, width: '100%', maxWidth: 520, padding: '1.75rem', maxHeight: '92vh', overflowY: 'auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
-          <h2 style={{ fontSize: 20, color: 'var(--green)' }}>Share your work</h2>
+          <h2 style={{ fontSize: 20, color: 'var(--green)', fontFamily: 'Fraunces, serif' }}>Share your work</h2>
           <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: 'var(--muted)' }}>✕</button>
         </div>
+
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {/* Image upload area */}
-          <div onClick={() => fileRef.current?.click()}
-            style={{ border: '2px dashed var(--border)', borderRadius: 14, padding: '1.5rem', textAlign: 'center', cursor: 'pointer', background: 'var(--cream)', transition: 'border-color 0.2s' }}
-            onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--green-light)'}
+          <div
+            onClick={() => fileRef.current?.click()}
+            style={{ border: '2px dashed var(--border)', borderRadius: 16, padding: '1.5rem', textAlign: 'center', cursor: 'pointer', background: 'var(--cream)', transition: 'border-color 0.2s' }}
+            onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--green)'}
             onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
           >
             {previews.length > 0 ? (
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
                 {previews.map((p, i) => (
-                  <img key={i} src={p} alt="" style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 10 }} />
+                  <img key={i} src={p} alt="" style={{ width: 90, height: 90, objectFit: 'cover', borderRadius: 12 }} />
                 ))}
+                <div style={{ width: 90, height: 90, borderRadius: 12, border: '2px dashed var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, color: 'var(--muted)' }}>+</div>
               </div>
             ) : (
               <>
-                <p style={{ fontSize: 32, marginBottom: 8 }}>📸</p>
-                <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--dark)', marginBottom: 4 }}>Upload photos of your work</p>
+                <p style={{ fontSize: 36, marginBottom: 8 }}>📸</p>
+                <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--dark)', marginBottom: 4 }}>Upload photos of your work</p>
                 <p style={{ fontSize: 12, color: 'var(--muted)' }}>Up to 5 photos · JPG, PNG or WebP · Max 5MB each</p>
               </>
             )}
@@ -261,20 +527,26 @@ function CreatePost({ onClose, onCreated, profile }) {
           <input ref={fileRef} type="file" accept="image/*" multiple onChange={handleFiles} style={{ display: 'none' }} />
 
           <div>
-            <label style={{ fontSize: 13, fontWeight: 500, display: 'block', marginBottom: 6 }}>Caption</label>
-            <textarea placeholder="Describe your work — what did you do? Where? Any details that show your quality..." value={caption} onChange={e => setCaption(e.target.value)} rows={3} style={{ resize: 'vertical' }} />
+            <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 6, color: 'var(--dark)' }}>Caption</label>
+            <textarea
+              placeholder="Describe your work — what did you do? Where? Any details that show your quality..."
+              value={caption}
+              onChange={e => setCaption(e.target.value)}
+              rows={3}
+              style={{ resize: 'vertical', width: '100%', borderRadius: 12, border: '1.5px solid var(--border)', padding: '10px 14px', fontFamily: 'DM Sans, sans-serif', fontSize: 14 }}
+            />
           </div>
 
-          <div style={{ background: 'var(--green-pale)', borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ background: 'var(--green-pale)', borderRadius: 12, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ fontSize: 16 }}>🏷️</span>
-            <p style={{ fontSize: 13, color: 'var(--green-mid)' }}>This post will be tagged as <strong>{profile?.skill || 'Other'}</strong></p>
+            <p style={{ fontSize: 13, color: 'var(--green-mid)' }}>Tagged as <strong>{profile?.skill || 'Other'}</strong></p>
           </div>
 
-          {error && <p className="error">{error}</p>}
+          {error && <p style={{ color: 'var(--danger)', fontSize: 13 }}>{error}</p>}
 
           <div style={{ display: 'flex', gap: 10 }}>
-            <button type="submit" className="btn btn-green" style={{ flex: 1, padding: '13px' }} disabled={uploading}>
-              {uploading ? 'Posting...' : 'Share post'}
+            <button type="submit" className="btn btn-green" style={{ flex: 1, padding: '13px', fontSize: 15 }} disabled={uploading}>
+              {uploading ? 'Posting...' : '📤 Share post'}
             </button>
             <button type="button" className="btn btn-outline" onClick={onClose} style={{ padding: '13px 18px' }}>Cancel</button>
           </div>

@@ -234,7 +234,7 @@ function PostCard({ post, user, onLike, timeAgo, navigate }) {
   }
 
   function handleShare() {
-    const url = `${window.location.origin}/posts`
+    const url = `${window.location.origin}/posts/${post.id}`
     if (navigator.share) {
       navigator.share({ title: `${post.author?.full_name} on Pruv`, text: post.caption || 'Check out this work!', url })
     } else {

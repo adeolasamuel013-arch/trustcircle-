@@ -11,16 +11,48 @@ export default function Posts() {
   const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(false)
 
-  useEffect(() => { loadPosts() }, [])
+  useEffect(() => { loadPosts() }, [user])
 
   async function loadPosts() {
     setLoading(true)
-    const { data } = await supabase
+    const { data: postsData } = await supabase
       .from('posts')
       .select('*, author:profiles!posts_author_id_fkey(id,full_name,skill,trust_score,avatar_url)')
       .order('created_at', { ascending: false })
       .limit(50)
-    setPosts(data || [])
+
+    if (!postsData) { setLoading(false); return }
+
+    // Load which posts the current user liked
+    let likedPostIds = new Set()
+    if (user) {
+      const { data: likesData } = await supabase
+        .from('post_likes')
+        .select('post_id')
+        .eq('user_id', user.id)
+      likedPostIds = new Set((likesData || []).map(l => l.post_id))
+    }
+
+    // Load comment counts for all posts
+    const postIds = postsData.map(p => p.id)
+    const { data: commentCounts } = await supabase
+      .from('comments')
+      .select('post_id')
+      .in('post_id', postIds)
+
+    const countMap = {}
+    ;(commentCounts || []).forEach(c => {
+      countMap[c.post_id] = (countMap[c.post_id] || 0) + 1
+    })
+
+    const enriched = postsData.map(p => ({
+      ...p,
+      liked: likedPostIds.has(p.id),
+      likes: p.likes || 0,
+      comment_count: countMap[p.id] || 0,
+    }))
+
+    setPosts(enriched)
     setLoading(false)
   }
 
@@ -105,6 +137,7 @@ export default function Posts() {
         .preview-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
         .preview-grid img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; }
         .empty-state { text-align: center; padding: 60px 20px; background: white; border-radius: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+        @keyframes spin { to { transform: rotate(360deg); } }
         @media(max-width: 600px) { .feed-container { padding: 12px 8px 60px; } .post-action-btn { font-size: 13px; gap: 5px; } }
       `}</style>
 
@@ -171,7 +204,7 @@ function PostCard({ post, user, onLike, timeAgo, navigate }) {
       .select('*, author:profiles!comments_author_id_fkey(id,full_name,avatar_url)')
       .eq('post_id', post.id)
       .order('created_at', { ascending: true })
-      .limit(30)
+      .limit(50)
     setComments(data || [])
     setCommentsLoaded(true)
   }
@@ -179,21 +212,24 @@ function PostCard({ post, user, onLike, timeAgo, navigate }) {
   async function toggleComments() {
     if (!showComments) await loadComments()
     setShowComments(v => !v)
-    if (!showComments) setTimeout(() => inputRef.current?.focus(), 100)
+    if (!showComments) setTimeout(() => inputRef.current?.focus(), 150)
   }
 
   async function submitComment(e) {
     e.preventDefault()
     if (!user) { navigate('/login'); return }
-    if (!commentText.trim()) return
+    if (!commentText.trim() || submitting) return
     setSubmitting(true)
-    const { data: newComment } = await supabase
+    const { data: newComment, error } = await supabase
       .from('comments')
       .insert({ post_id: post.id, author_id: user.id, content: commentText.trim() })
       .select('*, author:profiles!comments_author_id_fkey(id,full_name,avatar_url)')
       .single()
-    if (newComment) { setComments(c => [...c, newComment]); setCommentCount(n => n + 1) }
-    setCommentText('')
+    if (!error && newComment) {
+      setComments(c => [...c, newComment])
+      setCommentCount(n => n + 1)
+      setCommentText('')
+    }
     setSubmitting(false)
   }
 
@@ -218,6 +254,7 @@ function PostCard({ post, user, onLike, timeAgo, navigate }) {
 
   return (
     <div className="post-card">
+      {/* Header */}
       <div className="post-head">
         <Link to={`/profile/${post.author?.id}`}><Avatar profile={post.author} size={42} /></Link>
         <div className="post-head-info">
@@ -225,7 +262,7 @@ function PostCard({ post, user, onLike, timeAgo, navigate }) {
           <div className="post-head-meta">
             <span className="skill-chip">{post.skill_tag}</span>
             <span className="post-time">· {timeAgo(post.created_at)}</span>
-            {post.author?.trust_score > 0 && <span className="post-time">· ⭐ {post.author.trust_score} trust</span>}
+            {post.author?.trust_score > 0 && <span className="post-time">· ⭐ {post.author.trust_score}</span>}
           </div>
         </div>
         <Link to={`/profile/${post.author?.id}`}>
@@ -233,10 +270,12 @@ function PostCard({ post, user, onLike, timeAgo, navigate }) {
         </Link>
       </div>
 
+      {/* Text-only caption */}
       {post.caption && images.length === 0 && (
         <div style={{ padding: '4px 16px 14px', fontSize: 16, color: '#1a1a1a', lineHeight: 1.6 }}>{post.caption}</div>
       )}
 
+      {/* Images */}
       {images.length > 0 && (
         <div className="post-images" onClick={() => setLightbox(true)}>
           <img src={images[imgIndex]} alt={post.caption} loading="lazy" />
@@ -244,6 +283,7 @@ function PostCard({ post, user, onLike, timeAgo, navigate }) {
         </div>
       )}
 
+      {/* Thumbnail strip */}
       {images.length > 1 && (
         <div style={{ display: 'flex', gap: 4, padding: '8px 12px 4px', overflowX: 'auto' }}>
           {images.map((img, i) => (
@@ -253,10 +293,12 @@ function PostCard({ post, user, onLike, timeAgo, navigate }) {
         </div>
       )}
 
+      {/* Caption below image */}
       {post.caption && images.length > 0 && (
         <div className="post-caption-wrap"><b>{post.author?.full_name?.split(' ')[0]}</b>{post.caption}</div>
       )}
 
+      {/* Stats */}
       <div className="post-stats">
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           {(post.likes || 0) > 0 && <span>❤️</span>}
@@ -267,6 +309,7 @@ function PostCard({ post, user, onLike, timeAgo, navigate }) {
         </button>
       </div>
 
+      {/* Action buttons */}
       <div className="post-actions">
         <button className={`post-action-btn ${post.liked ? 'liked' : ''}`} onClick={() => onLike(post.id, post.liked, post.likes || 0)}>
           {post.liked
@@ -285,6 +328,7 @@ function PostCard({ post, user, onLike, timeAgo, navigate }) {
         </button>
       </div>
 
+      {/* Comments */}
       {showComments && (
         <div className="comments-section">
           {comments.length === 0 && commentsLoaded && (
@@ -302,6 +346,8 @@ function PostCard({ post, user, onLike, timeAgo, navigate }) {
               </div>
             </div>
           ))}
+
+          {/* Comment input */}
           <form className="comment-input-row" onSubmit={submitComment}>
             <Avatar profile={user ? { full_name: user.email } : null} size={34} />
             <input
@@ -311,7 +357,7 @@ function PostCard({ post, user, onLike, timeAgo, navigate }) {
               value={commentText}
               onChange={e => setCommentText(e.target.value)}
               disabled={!user || submitting}
-              onKeyDown={e => e.key === 'Enter' && !e.shiftKey && submitComment(e)}
+              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) submitComment(e) }}
             />
             <button type="submit" className="comment-send-btn" disabled={!commentText.trim() || submitting || !user}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
@@ -320,6 +366,7 @@ function PostCard({ post, user, onLike, timeAgo, navigate }) {
         </div>
       )}
 
+      {/* Image lightbox */}
       {lightbox && images.length > 0 && (
         <div className="modal-bg" onClick={() => setLightbox(false)}>
           <div className="modal-img-box" onClick={e => e.stopPropagation()}>
@@ -370,7 +417,13 @@ function CreatePost({ profile, onClose, onCreated }) {
         const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path)
         urls.push(publicUrl)
       }
-      await supabase.from('posts').insert({ author_id: user.id, caption: caption.trim() || null, images: urls, skill_tag: profile?.skill || 'Other', likes: 0 })
+      await supabase.from('posts').insert({
+        author_id: user.id,
+        caption: caption.trim() || null,
+        images: urls,
+        skill_tag: profile?.skill || 'Other',
+        likes: 0
+      })
       onCreated()
     } catch { setError('Failed to post. Please try again.') }
     finally { setUploading(false) }

@@ -15,13 +15,29 @@ export default function Search() {
     e.preventDefault()
     if (!query.trim()) return
     setLoading(true); setSearched(true); setSelected(null)
+
+    // Search by full query AND by each individual word so "web developer" matches "Web Developer"
+    const words = query.trim().split(/\s+/)
+    const filters = [`full_name.ilike.%${query}%`, `skill.ilike.%${query}%`]
+    words.forEach(word => {
+      if (word.length > 1) {
+        filters.push(`full_name.ilike.%${word}%`)
+        filters.push(`skill.ilike.%${word}%`)
+      }
+    })
+
     const { data } = await supabase
       .from('profiles')
       .select('id,full_name,skill,trust_score,vouch_count,avatar_url,location')
-      .or(`full_name.ilike.%${query}%,skill.ilike.%${query}%`)
+      .or(filters.join(','))
+      .not('skill', 'is', null)
       .order('trust_score', { ascending: false })
       .limit(20)
-    setResults(data || [])
+
+    // Deduplicate results by id
+    const seen = new Set()
+    const unique = (data || []).filter(r => { if (seen.has(r.id)) return false; seen.add(r.id); return true })
+    setResults(unique)
     setLoading(false)
   }
 

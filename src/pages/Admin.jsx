@@ -103,15 +103,31 @@ export default function Admin() {
     setConversations(convList)
   }
 
-  async function deleteUser(id, name) {
-    if (!confirm(`Delete ${name}? This will delete all their vouches, messages and reports.`)) return
+ async function deleteUser(id, name) {
+  if (!confirm(`Delete ${name}? This will delete all their vouches, messages and reports.`)) return
+  try {
     await supabase.from('vouches').delete().or(`voucher_id.eq.${id},vouchee_id.eq.${id}`)
     await supabase.from('messages').delete().or(`sender_id.eq.${id},receiver_id.eq.${id}`)
     await supabase.from('reports').delete().or(`reporter_id.eq.${id},reported_id.eq.${id}`)
     await supabase.from('profiles').delete().eq('id', id)
+
+    // Also delete their login account
+    const { data: { session } } = await supabase.auth.getSession()
+    await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ userId: id }),
+    })
+
     setUsers(u => u.filter(x => x.id !== id))
     showToast(`${name} has been deleted.`)
+  } catch (err) {
+    showToast(`Error deleting user: ${err.message}`)
   }
+}
 
   async function resetScore(id, name) {
     if (!confirm(`Reset ${name} trust score to 0?`)) return
